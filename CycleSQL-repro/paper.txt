@@ -1,0 +1,1898 @@
+ 
+
+ Grounding Natural Language to SQL Translation with Data-Based Self-Explanations 
+
+### Report GitHub Issue
+
+ × 
+
+ Title: 
+
+Content selection saved. Describe the issue below: 
+
+ Description: 
+
+ Submit without GitHub 
+ Submit in GitHub 
+
+ arXiv is now an independent nonprofit! 
+ Learn more 
+ × 
+
+ Back to arXiv 
+
+ Why HTML? 
+
+ Report Issue 
+
+ Back to Abstract 
+
+ Download PDF 
+
+ Abstract 
+
+ I Introduction 
+
+ II Preliminaries 
+
+ II-A NL2SQL models 
+
+ II-B Provenance 
+
+ III Cyclesql Overview 
+
+ III-A Natural Language Explanation 
+
+ III-B Feedback Loop in Cyclesql 
+
+ IV Methodologies 
+
+ IV-A Provenance via Query Rewriting 
+
+ IV-B Semantics Enrichment via Annotating 
+
+ IV-C Explanation Generation via Graphing 
+
+ IV-D Explanation as NL2SQL Verifier 
+
+ V Evaluation 
+
+ V-A Experimental Evaluation 
+
+ V-A 1 Experimental Setup 
+
+ V-A 2 Results on Spider 
+
+ V-A 3 Results on Robustness Settings. 
+
+ V-A 4 Analysis of Cyclesql 
+
+ V-A 5 Error Analysis 
+
+ V-B Qualitative Evaluation 
+
+ V-B 1 Case Study. 
+
+ V-B 2 User Study. 
+
+ VI Related Work 
+
+ VII Conclusion & Future Work 
+
+ References 
+
+ License: arXiv.org perpetual non-exclusive license
+
+arXiv:2411.02948v1 [cs.DB] 05 Nov 2024 
+
+### Grounding Natural Language to SQL Translation with Data-Based Self-Explanations
+
+ Yuankai Fan, Tonghui Ren, Can Huang, Zhenying He, X. Sean Wang
+
+ Affiliation:  School of Computer Science , Fudan University , Shanghai, China 
+
+{fanyuankai, zhenying, xywangCS}@fudan.edu.cn, {thren22, huangcan22}@m.fudan.edu.cn
+
+### Abstract
+
+Natural Language Interfaces for Databases empower non-technical users to interact with data using natural language (NL). Advanced approaches, utilizing either neural sequence-to-sequence or more recent sophisticated large-scale language models, typically implement NL to SQL (NL2SQL) translation in an end-to-end fashion. However, like humans, these end-to-end translation models may not always generate the best SQL output on their first try. In this paper, we propose Cyclesql , an iterative framework designed for end-to-end translation models to autonomously generate the best output through self-evaluation. The main idea of Cyclesql is to introduce data-grounded NL explanations of query results as self-provided feedback, and use the feedback to validate the correctness of the translation iteratively, hence improving the overall translation accuracy. Extensive experiments, including quantitative and qualitative evaluations, are conducted to study Cyclesql by applying it to seven existing translation models on five widely used benchmarks. The results show that 1) the feedback loop introduced in Cyclesql can consistently improve the performance of existing models, and in particular, by applying Cyclesql to Resdsql , obtains a translation accuracy of 82.0% (+2.6%) on the validation set, and 81.6% (+3.2%) on the test set of Spider benchmark; 2) the generated NL explanations can also provide insightful information for users, aiding in the comprehension of translation results and consequently enhancing the interpretability of NL2SQL translation 1 1 
+ 1 
+
+ Our code is available at
+ https://github.com/Kaimary/CycleSQL . . 
+
+### Index Terms: 
+NL2SQL, Self-explanation, Feedback loop
+
+### I Introduction 
+
+Natural language interfaces for databases (NLIDBs) [ 1 , 2 , 3 ] democratize data exploration by allowing users to interact with databases using natural language (NL), breaking down barriers to information retrieval and data analysis. Consequently, the development of NLIDBs has garnered significant attention from both the data management and natural language processing (NLP) communities since the late 1970s [ 4 , 5 , 6 , 7 ] . 
+
+In light of recent advancements in machine learning, the central focus of ongoing efforts to develop NLIDBs centers around elevating the accuracy of translating NL to SQL (NL2SQL) [ 8 , 9 ] . This objective is primarily accomplished via direct NL2SQL translation in an end-to-end manner, either by adopting sequence-to-sequence (Seq2seq) models trained on annotated data [ 10 , 11 , 12 , 13 , 14 , 15 , 16 , 17 ] or, more recently, by harnessing large-scale language models (LLMs) that push the boundaries of the field even further within the last two years [ 18 , 19 , 20 , 21 , 22 ] . 
+
+ 1 2 3 4 5 0.7 0.75 0.8 0.85 
+
+ Beam Size (Number of Chat Completion Choices) Translation Accuracy 
+
+ Picard (t5-3b) 
+
+ Resdsql (t5-large) 
+
+ Gpt-3.5-turbo 
+
+ Dailsql (chatgpt) 
+ Fig. 1 : Translation accuracy on Spider validation set with varied beam sizes (or chat completion choices). Accuracy for beam sizes (or chat completions) > 1 is evaluated by matching any beam result. 
+
+ Challenges. While significant advancements in enhancing overall accuracy, current end-to-end models face persistent challenges in producing desired quality output during their initial attempt, owing to the treatment of language translation as a “one-time deal”. Figure  1 shows the translation accuracy (defined as query execution result equivalence) on the Spider [ 7 ] benchmark, with varied beam outputs for two Seq2seq-based models 2 2 
+ 2 
+
+ Most existing Seq2seq-based NL2SQL translation models utilize beam search decoding method to maintain a list of top-k best outcomes. (i.e., Picard [ 16 ] , and Resdsql [ 17 ] ) or diverse chat completion choices for two LLM-based models 3 3 
+ 3 
+
+ LLMs often use a specific parameter to generate various responses. Refer to https://platform.openai.com/docs/api-reference/chat/create#chat-create-n . (i.e., Gpt-3.5-turbo and the state-of-the-art Dailsql model [ 22 ] ). As indicated by the plateauing accuracy (below 80%) observed when the beam size or the number of chat completions is set to 1 , they may fail to generate best-quality translations in their initial attempts. However, expanding the search space through wider beams or more chat completions steadily improves accuracy, without necessitating modifications to the underlying model architectures. This example shows that end-to-end models may benefit from broader exploration options to enhance translation quality over successive attempts. 
+
+ aid 
+ flno 
+ origin 
+ destination 
+
+ 9 
+ 2 
+ Los Angeles 
+ Tokyo 
+
+ 3 
+ 7 
+ Los Angeles 
+ Sydney 
+
+ 3 
+ 13 
+ Los Angeles 
+ Chicago 
+
+ 10 
+ 68 
+ Chicago 
+ New York 
+
+ 9 
+ 76 
+ Chicago 
+ Los Angeles 
+
+ 7 
+ 33 
+ Los Angeles 
+ Honolulu 
+
+ 5 
+ 34 
+ Los Angeles 
+ Honolulu 
+
+ 1 
+ 99 
+ Los Angeles 
+ Washington D.C. 
+
+ 2 
+ 346 
+ Los Angeles 
+ Dallas 
+
+ 6 
+ 387 
+ Los Angeles 
+ Boston 
+
+ aid 
+ name 
+ distance 
+
+ 1 
+ Boeing 747-400 
+ 8430 
+
+ 2 
+ Boeing 737-800 
+ 3383 
+
+ 3 
+ Airbus A340-300 
+ 7120 
+
+ 4 
+ British Aerospace Jetstream 41 
+ 1502 
+
+ 5 
+ Embraer ERJ-145 
+ 1530 
+
+ 6 
+ SAAB 340 
+ 2128 
+
+ 7 
+ Piper Archer III 
+ 520 
+
+ 8 
+ Tupolev 154 
+ 4103 
+
+ 9 
+ Lockheed L1011 
+ 6900 
+
+ 10 
+ Boeing 757-300 
+ 4010 
+
+ Fig. 2 : An example with simplified database ( Flight (left) and Aircraft (right) tables) from the Spider benchmark. 
+
+Inspired by the feedback mechanisms [ 23 , 24 ] used in modern recommendation systems and iterative refinement methods [ 25 , 26 ] introduced in LLMs, we present Cyclesql , an iterative framework built upon self-provided feedback to enhance translation accuracy of existing end-to-end models. Diverging from the traditional end-to-end translation paradigm, we introduce data-grounded NL explanations of query results as a form of internal feedback to create a self-contained feedback loop within the end-to-end process, facilitating iterative self-evaluation of translation correctness. 
+
+ SQL2NL back-translation for Self-Explanations? A natural way to generate self-provided feedback (explanations) in NL2SQL translation may involve its reverse process, namely SQL2NL. This entails establishing an NL-to-SQL-to-NL translation lifecycle, a concept analogous to back-translation [ 27 , 28 ] . Several studies have explored this technique [ 29 , 30 , 31 , 32 ] to refine initial SQL outputs, but we posit that solely using this “simple” back-translation to generate feedback may be limited, as it lacks additional contextual information beyond the NL and SQL components . Consider an intuitive example in Figure  2 , which shows an NL query alongside a translation from an existing model. By simply using the SQL2NL technique, however, incorrect “positive” feedback is generated: the meaning of the explanation seems to align with the initial NL query, whereas the underlying SQL query is deemed incorrect (i.e., an incorrect aggregation function is used in the SELECT clause). Thus, such a back-translated explanation may not adequately serve as valid feedback for the NL2SQL process. 
+
+ Our Methodology. Cyclesql proposes a plug-and-play framework that facilitates seamless integration with existing end-to-end NL2SQL models. By integrating with a conventional NL2SQL process, Cyclesql 
+ 1 first rewrites the translated SQL query to retrieve provenance information from the underlying database for a specific query result. 
+ 2 Following this, the provenance is enriched by annotating the semantics of the translated SQL query to its different parts. Next, 
+ 3 a data-grounded NL explanation is interpreted from the enriched provenance to rationalize the query result by leveraging text generation techniques [ 33 , 34 , 35 , 26 ] . Here, given that the NL explanation integrates both data-level (provenance) and operation-level (query) semantics, they possess significant potential to function as self-provided feedback for various underlying NL2SQL translation models. Finally, 
+ 4 the generated NL explanation is used to validate the correctness of the underlying translation iteratively, ultimately yielding a more reliable translation outcome. 
+
+To assess the effectiveness of Cyclesql , we conduct a comprehensive experimental evaluation on the widely-used benchmark Spider , and its three variants, namely Spider-realistic [ 36 ] , Spider-syn [ 37 ] , and Spider-dk [ 38 ] , as well as ScienceBenchmark [ 30 ] , by applying Cyclesql to six contemporary end-to-end NL2SQL models. The results show that Cyclesql can consistently enhance the translation accuracy of all the models. Notably, by applying Cyclesql to Resdsql (with T5-3b scale), Cyclesql obtains a translation accuracy of 82.0% on the validation set and 81.6% on the test set of Spider benchmark, achieving best-reported result among the leading Seq2seq-based models on Spider leaderboard 4 4 
+ 4 
+
+ https://yale-lily.github.io/spider . Moreover, a qualitative evaluation, including a case study and user study, is conducted to show that the explanations generated by Cyclesql can also greatly improve user interpretability in the black-box NL2SQL process. 
+
+ Contributions. We make the following three contributions: 
+
+ (1) 
+
+ Feedback Loop in NL2SQL. We propose, Cyclesql , a plug-and-play framework to establish a self-contained feedback loop within the NL2SQL process. Cyclesql employs data-grounded NL explanations as reliable feedback to iteratively validate the correctness of the translation, thereby enhancing the overall accuracy. 
+
+ (2) 
+
+ Rich Explanations for NL2SQL. The NL explanations generated by Cyclesql , incorporating not only the semantics from the query surface but also the semantics from the data instance, provide insightful information for users to understand the black-box NL2SQL translation process. 
+
+ (3) 
+
+ Quantitative and Qualitative Evaluations. We evaluate Cyclesql on five public benchmarks with seven NL2SQL models, demonstrating its substantial impact on performance improvements. Furthermore, a qualitative evaluation is conducted to gauge the utility of the generated NL explanations in enhancing user interpretability. 
+
+ Fig. 3 : Overview framework of Cyclesql 
+
+### II Preliminaries 
+
+### II-A NL2SQL models 
+
+ Seq2seq-based NL2SQL Models. A Seq2seq-based NL2SQL model typically adheres to the encoder-decoder learning framework [ 39 ] to translate NL queries to the corresponding SQL queries. Given an input NL query X=\{x_{1},x_{2},\cdots,x_{n}\} and a database schema S=\left\langle T,C\right\rangle that consists of a set of tables T and a set of corresponding columns C , the model uses an encoder to compute a contextual representation c by jointly embedding the NL query X with schema S . Afterward, an auto-regressive decoder is used to compute a distribution P(Y\mid\textbf{c}) over the SQL programs Y=(y_{1},\cdots,y_{\mid Y\mid}) . 
+
+ LLMs as NL2SQL Models. In light of the recent advancements in LLMs, current research [ 40 , 41 ] endeavors to employ LLMs as NL2SQL models without fine-tuning. Given an NL query X and a prompt P as input, an LLM can be utilized to generate the corresponding SQL query Y . Depending on the prompting technique utilized, such as zero-shot, few-shot prompting, or in-context learning, the prompt P can include text instructions [ 41 ] , translation demonstrations [ 20 , 22 ] or reasoning chains [ 19 , 42 ] . 
+
+### II-B Provenance 
+
+Provenance elucidates the origin and history of data throughout its lifecycle. Research has studied provenance semantics for various query classes in databases [ 43 , 44 ] . The most common forms of database provenance describe relationships between data in the source and its corresponding output [ 45 ] . This includes explaining where output data originated in the input (commonly known as where-provenance) [ 46 , 47 ] , revealing inputs that explain why an output record was produced (referred to as why-provenance) [ 48 , 47 ] , or providing a detailed account of how an output record was generated (referred to as how-provenance) [ 49 ] . This work adopts why-provenance , which functions as evidence within a query, comprising a subset of tuples that guarantees the presence of a specific tuple in the output. 
+
+Formally, given a query q having relations \mathbb{R}=\{R_{j_{1}},\cdots,R_{j_{p}}\} , the why-provenance \mathcal{P}(q,D) for database D and the query q to be a subset of R_{j_{1}}\times\cdots\times R_{j_{p}} , where a provenance model determines which tuples from the cross product belong to \mathcal{P}(q,D) . For a tuple t\in q(D) , the provenance \mathcal{P}(q,D,t) is the subset of the provenance that contributes to t (decided by the provenance model). 
+
+### III Cyclesql Overview 
+
+This section first provides a formal definition of the NL explanation we defined and presents the overview of Cyclesql . 
+
+### III-A Natural Language Explanation 
+
+Explanations for database query answers can differ across various dimensions, encompassing clarifying unexpected query outcomes [ 50 ] , explaining the rationale behind generating intriguing results from a query [ 51 ] , and justifying how an answer aligns with the query’s criteria [ 33 , 34 ] . Each of these dimensions serves a distinct purpose in query explanation. 
+
+In this work, we focus on the explanation for why an answer qualifies a given query and provide the following definition, 
+
+ Definition 1. (Explanation) Given an NL query X that can be parsed against the database D to retrieve a result set R, an explanation e_{r} takes the form of the NL expression that explains the intermediate reasoning steps behind querying X on database D to obtain a representative result r\in R . 
+
+ Definition 2. (Intermediate Reasoning Step) An intermediate reasoning step refers to a cognitive process that involves logical operations or transformations on the instances over database D , taking place between the NL query X and the query result r . Each reasoning step contributes to refining the understanding of X and progressively approaching r . 
+
+ Example 1. The following shows an NL explanation generated by Cyclesql (details of the generation process will be explained in late sections), which mostly includes two intermediate reasoning steps specifying the details of the reasoning process from the initial NL query to the query result based on the translated SQL query in the example shown in Figure  2 . 
+
+ Explanation: The query returns a result with one column of aggregation 
+
+ type (count) and one row. That is, for flights with aircraft Airbus A340-300, 
+
+                  ( intermediate reasoning step ➊) 
+
+ there are 2 flights in total. 
+
+ ( intermediate reasoning step ➋) 
+
+### III-B Feedback Loop in Cyclesql 
+
+A high-level view of Cyclesql is presented in Figure  3 . When seamlessly integrated into the end-to-end NL2SQL process of a designated translation model, the fundamental operational sequence of Cyclesql unfolds as follows: 
+
+ (1) 
+
+ Cyclesql first tracks the provenance information of the to-explained query result to retrieve data-level information from the underlying database. 
+
+ (2) 
+
+To align with user intent, Cyclesql further enhances the provenance information by associating it with operation-level semantics derived from the translated SQL query. 
+
+ (3) 
+
+An NL explanation of the query result is then interpreted by Cyclesql based on the enriched provenance. 
+
+ (4) 
+
+The NL explanation is subsequently used to verify the correctness of the underlying translation, iterating through the above steps until a validated translation is achieved. 
+
+Among these, the “hybrid” semantics that joins data-level provenance and operation-level query semantics is unique to our setup, and we found that the semantics are crucial for establishing a reliable feedback loop for NL2SQL. 
+
+ Data Tracking. In the initial stage (illustrated in Figure  3 - 
+ 1 ), Cyclesql entails tracing the lineage of the query result obtained from the execution of a SQL query sampled from an underlying translation model, intending to gather provenance information. In Cyclesql , the tracing process is implemented by rewriting the sampled SQL query to retrieve all relevant data-level details from the underlying database. 
+
+For example, regarding the query result shown in Figure  2 , its provenance corresponds to tuples F2 , F3 , where the column “aid” is equal to 3 in “Flight” table, as below, 
+
+ tupleID 
+ aid 
+ name 
+ flno 
+ origin 
+ destination 
+
+ F2 
+ 3 
+ Airbus A340-300 
+ 7 
+ Los Angeles 
+ Sydney 
+
+ F3 
+ 3 
+ Airbus A340-300 
+ 13 
+ Los Angeles 
+ Chicago 
+
+ Semantics Enrichment. In the following stage (depicted in Figure  3 - 
+ 2 ), Cyclesql further enriches the provenance information by integrating the operation-level semantics from the translated SQL query into its different parts. Since the translated SQL query captures the semantics from the initial NL query, this integration enables the reflection of user query semantics across different data segments of provenance. Cyclesql achieves this by decomposing the SQL query into a set of query units and associating the semantics of each query unit with relevant parts of data provenance. 
+
+Continuing the example in Figure  2 , the column “name” in the provenance table is enriched with the filtering semantics from the WHERE operation, and the whole table is associated with the count semantics from SELECT to attempt to reflect the “ all flight numbers ” semantics in the original NL query. 
+
+ Explanation Generation. In the subsequent stage (depicted in Figure  3 - 
+ 3 ), Cyclesql interprets the enriched provenance information into an NL expression, generating a detailed explanation for the given query result. Inspired by the success of text generation techniques, Cyclesql utilizes a simple but effective rule-based method to synthesize the NL explanation mechanically from the given enriched provenance information. 
+
+For instance, the NL explanation produced by Cyclesql for query result in Figure  2 can be seen in Example 1 in Section III-A , which interprets the meaning of number 2 . 
+
+ Translation Verification. In the final stage (shown in Figure  3 - 
+ 4 ), Cyclesql employs the generated NL explanation of the given query result as self-provided feedback to verify the accuracy of the underlying NL2SQL translation. To accomplish this, Cyclesql formulates the translation validation process as a natural language inference (NLI) task in the NLP field and uses a deep-learning model to determine whether the NL explanation entails the original NL query, thereby validating the correctness of the translation. Cyclesql iterates through the above stages until validation succeeds, ultimately leading to an improved translation outcome. 
+
+Continuing the example in Figure  2 , Cyclesql may recognize that expressions such as “ there are 2 flights in total ” in the explanation are not aligned with the “ all flight numbers ” semantics of the initial NL query, thereby the translated SQL query is validated as incorrect. In response, Cyclesql solicits another sampled SQL query from the underlying translation model, repeating this process until the validation succeeds. 
+
+### IV Methodologies 
+
+### IV-A Provenance via Query Rewriting 
+
+To explain an individual query result, the essential element is detailed provenance information. This information is akin to the provenance table introduced in [ 51 ] , serving as an immediate form of explanation that describes how a query result is derived from the data stored in the underlying database. Acknowledging the relational semantics in SQL, wherein each operator generates its result tuple by tuple from its operand tables [ 52 ] , we employ the query inversion methods [ 53 , 54 ] to capture provenance information using query rewriting. In this way, Cyclesql inverts transformations performed by a given SQL query to determine the source tuples that have contributed towards the result set. 
+
+Specifically, given an executed SQL query with a specific to-explained query result, Cyclesql employs the following three heuristic rules to automatically rewrite the SQL into a query that can be executed to capture provenance. 
+
+ • 
+
+ Rule 1 (Result Transformation Rule). Intuitively, the query result may specify the particular column and value that satisfies the query criteria. Hence, the initial step in the rewriting process is to translate the query result into a WHERE clause to explicitly specify the result-specific condition and incorporate it back to the original query. 
+
+Note that in some cases, a query result is not associated with a specific column (e.g., when referring to all columns in the referenced table using the asterisk symbol (*)). In such cases, the application of this rule may be skipped. 
+
+ • 
+
+ Rule 2 (Projection Enhancement Rule). We observe that every column referenced in a SQL query (irrespective of the associated operator) provides valuable hints for provenance. Therefore, we extract all columns used in the original SQL query and incorporate them as additional projection columns. Besides that, we also include the primary keys of those referenced tables as part of the projection columns. 
+
+Acknowledge that retrieving all columns in the referenced tables for provenance may be more straightforward. However, introducing this rule can aid in crafting a more concise explanation using more relevant provenance information. 
+
+ • 
+
+ Rule 3 (Aggregation Deconstructive Rule). Since aggregation functions (and the GROUP BY clause) may collapse input data rows, they inherently conceal the ability to track the provenance. Therefore, we invert the potential transformations by simply eliminating aggregation functions (and GROUP BY clause) to unravel the lineage of the data 5 5 
+ 5 
+
+ Note that these operations are temporarily excluded for query rewriting purpose. They will be revisited in the following phase for query semantics annotation. Further details can be found in the late section. . 
+
+ Fig. 4 : Provenance querying using a rewritten SQL query. 
+
+ Example 2. Figure  4 illustrates the query rewriting process applied to the translated SQL query presented in Figure  2 . The rewritten SQL query is transformed by applying Rule 2 to retrieve the column from the condition and Rule 3 to eliminate the aggregation by replacing it with relevant columns. 
+
+It is important to note that as Cyclesql attempts to trace the provenance information of a given query result by retrieving the relevant data records, the absence of a result from an SQL query may indicate a lack of corresponding provenance information. Therefore, Cyclesql skips this step for empty-result queries and directly uses the operation-level semantics (refer to the subsequent section) to generate the explanation instead. Exploring more effective strategies for managing empty-result queries within the context of Cyclesql could pose an interesting research problem. 
+
+### IV-B Semantics Enrichment via Annotating 
+
+The main observation arising from the provenance enrichment process is that while provenance information can reveal details about the query result derived from the data, it is insufficient for providing insights into why the query result satisfies the query criteria [ 51 ] . To give a flavor of the explanation that may be produced by only leveraging the provenance information, an NL explanation is exemplified as follows for the example in Figure  4 , 
+
+ \blacktriangleright Flight number 7 and flight number 13 are both associated with the Airbus A340-300 aircraft. 
+
+Although the explanation interprets the details about those flights with “ Airbus A340-300 ” aircraft, it does not clarify how result number 2 is derived. This lack of explicit information may impede Cyclesql from getting a valid explanation suitable for validating the underlying translation afterward. 
+
+To address the limitation above, Cyclesql enriches the provenance by integrating the operation-level semantics of the SQL queries (both the original and rewritten SQLs) to better reflect user query intent. The fundamental concept behind this enrichment is that different parts of the query may “contribute” to different parts of the provenance information (e.g., the parts of a rewritten query) or play a role in transforming the query result based on different parts of the provenance (e.g., the parts of an original query). We hope to identify semantics alignment between provenance elements and query operators, ensuring all necessary semantics are properly captured and combined. 
+
+Specifically, Cyclesql initially treats the SQL query as a text string and divides the string into chunks that correspond to each clause in the SQL query 6 6 
+ 6 
+
+ We observe that a subquery embodies complete semantics in a SQL query. Therefore, we consider a subquery as a whole when performing the division. . Each query clause contains its query elements, such as the column “name” in the WHERE clause, representing its semantics. Cyclesql then simply navigates through the provenance (table) to locate the corresponding element mentioned in the query clauses and overlays annotations atop it as their semantics labels. If a query clause contains an asterisk element (*), we place the annotation atop the table to signify global semantics across the referenced table, rather than on an individual element. The meaning of the asterisk element is subsequently determined during the explanation generation process. 
+
+ Fig. 5 : An example of the enriched provenance information. 
+
+ Example 3. Figure  5 illustrates the enriched provenance table retrieved in Figure  4 , where the table is enriched by one annotation (i.e., 
+ 2 ) from the original translated query, along with one annotation (i.e., 
+ 1 ) derived from the WHERE clause. 
+
+### IV-C Explanation Generation via Graphing 
+
+At the core of Cyclesql lies a basic question: how to interpret the enriched provenance information to a textual expression in free-text forms that are highly expressive and meaningful to explain the query result. Motivated by previous works on formulating provenance in NL [ 33 , 34 ] and earlier SQL2NL works [ 55 , 35 ] , Cyclesql employs a simple but effective rule-based method to synthesize the NL explanation using the enriched provenance information. 
+
+More specifically, Cyclesql initiates the process by generating a brief text summary of the query, outlining details such as the number of columns and rows in the returned result set. Next, Cyclesql partitions the enriched provenance table of a specific query result into distinct segments, proceeding with the incremental construction of a provenance graph. A provenance graph, denoted as G_{p}(V_{p},E_{p}) , is a directed graph where nodes in V_{p} represent provenance elements, such as the table element “ Flights ”, the column element “ filghtNo ” and the value element “ 1377 ”. Each edge in E_{p} is associated with a type, indicating a specific relationship between two elements. For example, as for the provenance table in Figure  5 , G_{p} has a joint table node “ Airlines-Flights ”, which has a “ hasAttribute ” type edge that connects with the column node “ uid ”; the column node “ uid ”, in turns, has a “ hasValue ” type edge that connects with the value node “ 12 ”. Then, Cyclesql assigns the query annotations we obtained in Section IV-B as the semantics labels to each corresponding element. Finally, Cyclesql traverses the graph G_{p} to generate NL phrases for each provenance element with its associated labels. The NL phrases (and the initially generated summary) are then concatenated to generate the NL explanation by using some descriptive expressions (e.g., ‘so’ , ‘for’ , etc.). We present the explanation generation process in Algorithm 1 . 
+
+ Example 4. The following explanation is generated from the provenance graph in the motivating example, 
+
+ \blacktriangleright The query returns a result with one column of aggregation type (count) and one row. For flights with aircraft, named Airbus A340-300, there are 2 flights in total. 
+
+While the generated explanations may lack naturalness, we posit that they are informative for capturing the core semantics conveyed in the given provenance information targeted for a specific query result. These explanations can further be refined using a “polishing model” (e.g., a few-shot prompted LLM) to enhance their naturalness, especially for better user readability. (Refer to the evaluation in Section  V-B for an example.) 
+
+ Join-related Semantics. We observe that the semantics expressed in provenance may become much more abstract when derived from join-related operations [ 35 ] . For example, the provenance table shown in Figure  5 represents a new “table” derived from the join operation of the underlying SQL query, and the semantics of the aggregation-related semantics (i.e., count semantics) become abstract after the table joining. 
+
+ Algorithm 1 Natural Language Explanation Generation 
+
+ Inputs :   R : query result set; T_{r} : enriched provenance table for a query result r .
+
+ // Summarize query statistics from the result set 
+
+ s_{0} = Generate -SUMMARY ( R )
+
+ // Build the provenance graph for a specific result 
+
+ \{p_{r_{i}}\}_{i=1}^{n}\leftarrow Build -GRAPH ( T_{r} )
+
+ for i=1,\cdots,n do 
+
+      // Generate NL phrase for each provenance element 
+
+      s_{i}= Generate -PHASE( p_{r_{i}} ) 
+
+end for
+
+s = Compose -PHASE( s_{0},s_{1},\cdots,s_{n} ) 
+
+ Output :   s : A textual string about explanation
+
+To capture the join semantics, we introduce a heuristic method to discover the semantics before the NL phrase generation. Specifically, we represent database schemata as graph structures, with nodes as tables
+and edges denoting relationships between the tables. We create an inter-table graph pool comprising pre-defined common graph topologies to capture potential semantics. For example, in a three-node graph where one node (table) connects to two other nodes (tables), this structure may represent
+ object-attribute semantics. 
+
+When a join relation appears in a query, we convert it into the graph structure as described above and then check for isomorphism with any pre-defined graphs to determine the corresponding join semantics. If no isomorphism is found, we use the associated table names to represent the join semantics instead. Figure  6 shows an example of a three-table query, where the “Singer_in_concert” table has two foreign keys linked to the “Concert” and “Singer” tables. When matched with pre-defined graphs, an isomorphism graph (i.e., the three-node graph with subject-relationship-object semantics) is identified, enabling the join semantics to be instantiated as “ singer with concert ” using the specific table names. 
+
+ Fig. 6 : Join-related semantics discovery in Cyclesql . 
+
+### IV-D Explanation as NL2SQL Verifier 
+
+Once the NL explanation for a specific query result is generated, the subsequent question for Cyclesql is how to effectively leverage the NL explanation to validate the translation. Drawing inspiration from the recent achievements in the NLP field, we thus formulate the translation validation problem as a textual entailment task ( a.k.a. NLI task) [ 56 , 57 ] and employ deep learning techniques to construct an NLI model for this purpose. Here, the NLI model aims to evaluate the semantic coherence between a given NL query and the NL explanation associated with a query result. The NL query fragment, labeled as hypothesis ( H ), is inferred from the NL explanation fragment known as premise ( P ) 7 7 
+ 7 
+
+ To provide extra context, we also include the query result along with the SQL query within the premise, using a special token ( | ) to separate each part. . In other words, an explanation P entails an NL query H , if H is considered to be true within the context of the corresponding text P . 
+
+ Remark. To implement the NLI model, popular choices include utilizing ready-to-use LLMs [ 18 , 58 ] , off-the-shelf NLI models [ 59 , 60 ] , or crafting a custom NLI model from scratch. However, we found that the first two choices may yield inferior performance when contrasted with the latter. (Refer to the experiments presented in Section   V-A4 for further details.) Therefore, in this paper, we introduce a dedicated NLI model, as outlined below, to serve as the verifier instead. 
+
+Figure  7 presents the architecture of the dedicated NLI model. Building upon prior works [ 61 , 62 ] , we adopt a similar approach to construct the model, refining it via fine-tuning for specific classification objectives. We use a unified text encoder to jointly encode the hypothesis and the premise, applying a pooling layer to create a unified embedding vector, which is then fed into a classification layer for output. 
+
+ Fig. 7 : NLI model with entailment and contradiction pairs. 
+
+ Training Data. The training data is enforced as a set of premise-hypothesis-label triples, denoted as \{(p_{i},h_{i},l_{i})\}_{i=1}^{N} , where p_{i} is an explanation (inclusive of the associated query result and SQL query), h_{i} is an NL query, and l_{i} is a classification label, with possible values including “ entailment ” ( +1 ) and “ contradiction ” ( -1 ). We collect the data as follows: 
+
+ • 
+
+For positive samples (i.e., instances with the “entailment” label), we create samples using human-curated data (NL-SQL pairs) from public benchmarks. Initially, we execute the provided SQL query against the underlying database to get the query results. A specific query result is then randomly selected to generate the explanation using Cyclesql . Thus, a triple (p_{+},h,+1) is formed. 
+
+ • 
+
+For negative samples (i.e., instances labeled as “contradiction”), we generate samples from the erroneous translations produced by existing NL2SQL models on the public benchmarks. Rather than relying on human-labeled ground-truth SQL queries in public benchmarks, we initiate the process with the “incorrect” SQL queries generated by existing NL2SQL models and employ a similar approach for positive counterparts to complete the generation. Thus, a triple (p_{-},h,-1) is then formed. 
+
+In this work, we use the public benchmark’s training set to build the verifier’s training set (details in the next section). 
+
+ Loss Function. Cross-entropy loss is a well-adopted loss function in classification tasks. However, owing to the significantly greater number of negative samples collected from various translation models compared to the positive ones from human-curated benchmarks, the label distribution in the training set becomes highly imbalanced, resulting in significant training bias. To alleviate this issue, we utilize the focal loss [ 63 ] as our classification loss, which is defined in the following way, 
+
+ \displaystyle FL(p_{t})=-(1-p_{t})^{\gamma}\cdot\log(p_{t}) 
+
+ (1) 
+
+ \displaystyle p_{t}=\left\{\begin{array}[]{ll}p&if\;\;y=1\\
+1-p&\mathrm{otherwise.}\end{array}\right. 
+
+where y\in{\pm 1} specifies the ground-truth class and p\in[0,1] is the model’s estimated probability for the class with label y=1 , and \gamma is the focusing parameter controlling the down-weighting of well-classified examples. 
+
+### V Evaluation 
+
+This section initiates with an experimental evaluation conducted by applying Cyclesql to state-of-the-art NL2SQL models, thereby gauging its impact on their overall performance improvement. Following this, a qualitative evaluation incorporating a case study and a user study is carried out to evaluate the quality of explanations produced by Cyclesql . 
+
+### V-A Experimental Evaluation 
+
+### V-A 1 Experimental Setup
+
+Following are the details: 
+
+ Datasets. We conduct experiments on the Spider dataset and its three robustness variants, namely Spider-realistic , Spider-syn , and Spider-dk , as well as on the complex scientific ScienceBenchmark benchmarks. 
+
+ • 
+
+ Spider [ 7 ] includes 10,181 NL queries and 5,693 unique SQL queries on 206 databases covering 138 domains. As it uses different databases across its train, dev, and test data sets, the model’s generalizability can be properly evaluated. 
+
+Since its test set is not available in public, our experiments primarily focused on Spider validation set. We apply Cyclesql to Resdsql and Gpt-3.5-turbo and get the evaluation results on the test set (See Table I ). 
+
+ • 
+
+ Spider-realistic [ 36 ] poses the challenges associated with text-table alignments, creating a more realistic scenario by omitting explicit column name mentions. This requires models to adeptly map NL terms to relevant schema items. 
+
+ • 
+
+ Spider-syn [ 37 ] modifies original NL queries of Spider by substituting schema-related terms with handpicked synonyms. This challenges the reliance on lexical matching. 
+
+ • 
+
+ Spider-dk [ 38 ] necessitates the models to know about domain-specific knowledge for the SQL generation. Preliminary observations reveal that current models encounter difficulties meeting this elevated domain-specific demand. 
+
+ • 
+
+ ScienceBenchmark [ 30 ] serves as a complex benchmark for three real-world scientiﬁc databases. For this benchmark, domain experts crafted 103/100/100 high-quality NL-SQL pairs for each domain, then augmented with synthetic data generated using Gpt-3.5 . 
+
+ Models 
+      Spider 
+      Spider Variants 
+      ScienceBenchmark 
+
+      Validation 
+      Test 
+      Realistic 
+      Syn 
+      Dk 
+      OncoMx 
+ Cordis 
+ Sdss 
+
+      EM 
+ EX 
+ TS 
+      EM 
+ EX 
+      EM 
+ EX 
+ TS 
+      EM 
+ EX 
+ TS 
+      EM 
+ EX 
+      EM 
+ EM 
+ EM 
+
+ Seq2seq-based Models 
+
+ SmBoP 
+ Base 
+      74.5 
+ 77.8 
+ 72.5 
+      69.5 
+ 71.1 
+      60.2 
+ 61.4 
+ 56.1 
+      60.2 
+ 64.9 
+ 58.3 
+      54.0 
+ 59.1 
+      16.2 
+ 16.0 
+ 7.0 
+
+ + Cyclesql 
+      74.1 
+ 78.8 
+ 73.1 
+      - 
+ - 
+      59.8 
+ 62.2 
+ 56.7 
+      59.1 
+ 65.5 
+ 58.6 
+      53.3 
+ 59.8 
+      17.2 
+ 16.0 
+ 8.0 
+
+ \textsc{{Picard}}_{\textsc{{3b}}} 
+ Base 
+      75.9 
+ 79.3 
+ 72.8 
+      72.4 
+ 75.1 
+      68.9 
+ 71.7 
+ 64.6 
+      65.6 
+ 69.8 
+ 63.2 
+      49.7 
+ 63.2 
+      32.3 
+ 26.0 
+ 8.0 
+
+ + Cyclesql 
+      76.1 
+ 79.9 
+ 72.8 
+      - 
+ - 
+      68.7 
+ 71.9 
+ 64.6 
+      65.9 
+ 70.8 
+ 63.6 
+      50.3 
+ 63.6 
+      33.3 
+ 24.0 
+ 8.0 
+
+ \textsc{{Resdsql}}_{\textsc{{Large}}} 
+ Base 
+      74.0 
+ 77.5 
+ 71.6 
+      66.8 
+ 73.5 
+      67.3 
+ 69.5 
+ 61.6 
+      58.8 
+ 65.3 
+ 59.6 
+      50.1 
+ 58.1 
+      33.0 
+ 29.0 
+ 4.0 
+
+ + Cyclesql 
+      75.1 
+ 80.5 
+ 74.0 
+      68.9 
+ 77.1 
+      69.1 
+ 73.6 
+ 64.2 
+      61.6 
+ 69.6 
+ 63.2 
+      50.5 
+ 61.5 
+      35.0 
+ 32.0 
+ 8.0 
+
+ \textsc{{Resdsql}}_{\textsc{{3b}}} 
+ Base 
+      76.0 
+ 79.4 
+ 73.5 
+      70.2 
+ 78.4 
+      68.9 
+ 72.2 
+ 64.8 
+      62.9 
+ 69.5 
+ 63.2 
+      52.0 
+ 59.3 
+      34.1 
+ 28.0 
+ 6.0 
+
+ + Cyclesql 
+      76.8 
+ 82.0 
+ 76.0 
+      72.5 
+ 81.6 
+      71.3 
+ 76.5 
+ 67.5 
+      65.5 
+ 73.3 
+ 66.6 
+      52.5 
+ 61.3 
+      37.4 
+ 31.0 
+ 8.0 
+
+ LLM-based Models 
+
+ Gpt-3.5-turbo 
+
+ ( 5-shots ) 
+
+ Base 
+      43.8 
+ 72.8 
+ 61.7 
+      44.7 
+ 69.4 
+      39.4 
+ 65.4 
+ 52.8 
+      34.0 
+ 61.0 
+ 49.8 
+      39.1 
+ 60.6 
+      34.3 
+ 30.0 
+ 10.0 
+
+ + Cyclesql 
+      49.2 
+ 77.8 
+ 66.2 
+      50.6 
+ 75.1 
+      46.5 
+ 71.1 
+ 56.7 
+      40.0 
+ 66.7 
+ 55.4 
+      43.7 
+ 65.6 
+      43.4 
+ 34.0 
+ 12.0 
+
+ Gpt-4 
+
+ ( 5-shots ) 
+
+ Base 
+      51.9 
+ 77.9 
+ 71.2 
+      - 
+ - 
+      46.7 
+ 68.6 
+ 55.3 
+      45.2 
+ 75.0 
+ 64.4 
+      53.7 
+ 68.5 
+      51.5 
+ 40.0 
+ 14.0 
+
+ + Cyclesql 
+      58.7 
+ 79.8 
+ 73.1 
+      - 
+ - 
+      49.0 
+ 70.6 
+ 56.9 
+      46.2 
+ 76.0 
+ 66.3 
+      57.4 
+ 68.5 
+      56.6 
+ 43.0 
+ 15.0 
+
+ Chess 
+ Base 
+      23.4 
+ 41.1 
+ 37.5 
+      - 
+ - 
+      21.2 
+ 39.7 
+ 36.6 
+      17.4 
+ 37.0 
+ 32.5 
+      19.5 
+ 35.6 
+      64.6 
+ 46.0 
+ 40.0 
+
+ + Cyclesql 
+      25.6 
+ 42.3 
+ 38.2 
+      - 
+ - 
+      23.1 
+ 41.1 
+ 37.9 
+      19.3 
+ 38.1 
+ 33.0 
+      20.2 
+ 36.1 
+      65.7 
+ 52.0 
+ 40.0 
+
+ \textsc{{Dailsql}}_{\textsc{{3.5}}} 
+ Base 
+      65.1 
+ 81.3 
+ 74.1 
+
+ + Cyclesql 
+      67.2 
+ 81.8 
+ 74.3 
+
+ TABLE I : Overall translation results on Spider and its three variants, as well as Sciencebenchmark benchmarks (%). The fire symbol indicates training the NLI model with the respective training data, while the ice symbol denotes freezing the model weights. 
+
+ Baseline NL2SQL Models. We consider the following two types of baselines: Seq2seq-based translation models fine-tuned on the Spider training set, including SmBoP [ 14 ] , Picard [ 16 ] , and Resdsql [ 17 ] , and LLM-based models , such as Gpt-3.5-turbo , Gpt-4 , Chess [ 32 ] , and Dailsql [ 22 ] . We briefly describe each baseline model as follows: 
+
+ • 
+
+ SmBoP re-formats the top-down decoding method and employs a reverse bottom-up decoding mechanism based on Grappa [ 64 ] , a pre-trained model for semantic parsing. 
+
+ • 
+
+ Picard constrains the auto-regressive decoders via incremental parsing. We denote as \textsc{Picard}_{\textsc{3b}} as it is implemented based on T5-3b model [ 65 ] . 
+
+ • 
+
+ Resdsql represents the question and schema in a tagged sequence. Resdsql was implemented using three scales of T5 model: Base , Large and 3B . In our experiments, we use Resdsql with the latter two scales, denoted to as \textsc{Resdsql}_{\textsc{Large}} and \textsc{Resdsql}_{\textsc{3b}} , and exclude its combination with Natsql [ 66 ] . 
+
+ • 
+
+ Gpt-3.5-turbo 8 8 
+ 8 
+
+ Specifically refers to the Gpt-3.5-turbo-0125 version of the model. and Gpt-4 stand out as two of the most advanced LLMs. In our experiment, we perform experiments on the two models using 5-shot prompting with a simple instruction as depicted in the below example, 
+
+ ###Instruction 
+
+ Given a database schema and NL question, and generate an SQL query. 
+
+ ###Schema 
+
+ Table Player with columns ’pID’, ’pName’, ’yCard’, ’HS’; 
+
+ Table Tryout with columns ’pID’, ’cName’, ’pPos’, ’decision’; 
+
+ ###NL Question 
+
+ For each position, what is the maximum number of hours for students 
+
+ who spent more than 1000 hours training? 
+
+ ###Demonstrations 
+
+ (demonstrations) 
+
+ ###Target SQL Query 
+
+ • 
+
+ Chess introduces a pipeline that retrieves relevant data, selects an efficient schema, and synthesizes correct SQLs. We use its published fine-tuned model 9 9 
+ 9 
+
+ https://huggingface.co/AI4DS/NL2SQL_DeepSeek_33B for candidate generation and Gpt-3.5-turbo for the remaining LLM calls. 
+
+ • 
+
+ Dailsql utilizes demonstration selection by analyzing NL and SQL query similarity. In our experiments 10 10 
+ 10 
+
+ We fail to reproduce its preliminary model, Graphix [ 67 ] , for pre-generating queries. Therefore, our evaluation only uses the publicly available pre-generated queries from the authors on the Spider validation set. , we use Dailsql with Gpt-3.5-turbo , denoted as \textsc{Dailsql}_{\textsc{3.5}} . 
+
+Note that all three Seq2seq-based models are explicitly designed to handle specific values in SQL queries. Thus, they are capable of generating valid (executable) SQL queries, allowing effective provenance tracking by Cyclesql . 
+
+ Training Settings. The NLI model is initialized by the T5-large model, incorporating a sequence classification/head on top, achieved through a linear layer over the pooled output. We modify the default cross-entropy loss used in the T5 model to the focal loss, setting the focusing parameter \gamma and the weighted factor \alpha to 2.0 and 0.75 , respectively. Additionally, we re-scale the classification weights of the two classes to 2.7 and 1.0 , respectively, accounting for the imbalanced training data distribution. We then utilize the Adam optimizer with a learning rate of 5e-6 to train the model. 
+
+ Training data. We use the baseline models to generate negative samples by extracting erroneous translations from their outputs on the Spider training data. Here, a translation is considered erroneous if the execution result of the translated SQL diverges from the ground truth. We used the script provided by Spider authors to determine the equivalence of two different tuple sets based on “bag semantics”, making the order irrelevant. As a result, we collected about 30,000 training queries, including positive samples derived from the Spider training set. 
+
+ Inference Settings. To establish the feedback loop in the end-to-end translation process, we apply Cyclesql to the baseline models in the following manner: Initially, each baseline model generates a list of top- k candidate SQL queries for a given NL query 11 11 
+ 11 
+
+ For those Seq2seq-based models, we use beam search and set k to 8 ; For those LLM-based counterparts, we specify the API parameter to 5 instead. . Subsequently, Cyclesql is applied to iteratively validate each candidate SQL query of a baseline model. If the validation succeeds, the candidate SQL query is considered as the final translation result for the given NL query. Otherwise, Cyclesql repeats the process with the next ranked candidate until no more candidate SQL queries remain to check. Notably, if all candidate SQL queries from a baseline model fail validation for the given NL query, the top- 1 candidate SQL query is designated as the outcome. 
+
+ Evaluation Metrics. 
+The metrics are syntactic accuracy (EM), execution accuracy (EX), and test suite accuracy (TS). 
+
+ • 
+
+ Syntactic Accuracy (EM) measures whether the generated query exactly matches the ground truth, ignoring specific values in the SQL statements. 
+
+ • 
+
+ Execution Accuracy (EX) evaluates if the result matches the ground truth by executing the generated SQL query. 
+
+ • 
+
+ Test Suite Accuracy (TS) refines the EX metric through a distilled test suite of databases, examining if the translated query passes all EX assessments across these distilled databases. For evaluation, we utilize the script provided by [ 68 ] to generate an augmented 100 -fold distilled database. 
+
+### V-A 2 Results on Spider 
+
+Table  I presents our main results. 
+
+ Cyclesql consistently improves over all base models , particularly evident in the execution and test suite accuracy metrics 12 12 
+ 12 
+
+ Given that the NLI model considers a translation as correct based on the execution equivalence criteria (as described in Training Settings in this section), we may expect some fluctuations in the syntactic accuracy evaluation. . One remarkable outcome is observed when applying to \textsc{Resdsql}_{\textsc{3b}} , obtaining an execution accuracy of 82.0% on the validation set and 81.6% on the test set of Spider . This performance surpasses the best-reported result among leading Seq2seq transformer-based models on the leaderboard. 
+
+It is worth noting that, unlike Seq2seq-based models, Cyclesql significantly enhances the syntactic accuracies of LLM-based counterparts. This notable difference stems from the fact that LLMs serve as NL2SQL models without tailored fine-tuning on existing benchmarks. This inherent diversity in the generation can be complemented by Cyclesql (i.e., training on benchmark-specific data), enabling LLMs to align more effectively with benchmark-specific targeted outputs. 
+
+On the other hand, applying Cyclesql to Picard yields limited performance gains, mainly due to lower-quality sampled queries. That is, Picard struggles to generate the correct SQL within the top sampled outputs (See Table  8(a) for more details), requiring multiple attempts to find the correct query. This emphasizes the need for the NLI model used in Cyclesql to robustly identify preceding incorrect translations. In addition, Chess exhibits poorer performance compared to other baselines. Upon examining the failed cases, we found that this is due to limitations in the evaluation script with semantically equivalent queries: Chess tends to generate “ID-like” projection columns, which the evaluation marks as incorrect, even when the semantics match the ground-truth (e.g., discrepancies between count (id) and count (*)). 
+
+ Break-down Results . Table II provides a breakdown of the execution accuracy on Spider , categorized by the SQL difficulty levels defined in Spider . Not surprisingly, the performance of all the models drops with increasing difficulty. Notably, the application of Cyclesql leads to a consistent improvement, particularly in “Medium” and “Hard” queries for all translation models, except for a slight dip observed in “Hard” queries with SmBoP . In addition, a significant improvement is observed in “Extra Hard” queries across the four LLM-based models upon the application of Cyclesql , which, in particular, achieved 59.6% accuracy on Gpt-4 . This suggests that LLM-based models can generate complex queries through iterative attempts, and Cyclesql effectively aids in discerning and selecting queries from these successive attempts. 
+
+ TABLE II : Execution accuracy (%) by SQL difficulty levels. 
+
+ Model 
+      Easy 
+ Medium 
+ Hard 
+ Extra Hard 
+
+ SmBoP 
+ Base 
+      90.7 
+ 82.7 
+ 70.7 
+ 52.4 
+
+ + Cyclesql 
+      90.7 
+ \textbf{84.1}_{(\uparrow 1.4)} 
+ 69.5_{(\downarrow 1.2)} 
+ 53.0_{(\uparrow 0.6)} 
+
+ \textsc{{Picard}}_{\textsc{{3b}}} 
+ Base 
+      95.6 
+ 85.4 
+ 67.8 
+ 50.6 
+
+ + Cyclesql 
+      95.6 
+ 86.1_{(\uparrow 0.7)} 
+ 69.5_{(\uparrow 1.7)} 
+ 50.6 
+
+ \textsc{{Resdsql}}_{\textsc{{Large}}} 
+ Base 
+      92.3 
+ 83.4 
+ 66.1 
+ 51.2 
+
+ + Cyclesql 
+      93.5_{(\uparrow 1.2)} 
+ 86.1_{(\uparrow 0.7)} 
+ \textbf{73.0}_{(\uparrow\textbf{6.9})} 
+ 53.6_{(\uparrow 2.4)} 
+
+ \textsc{{Resdsql}}_{\textsc{{3b}}} 
+ Base 
+      94.0 
+ 85.7 
+ 65.5 
+ 55.4 
+
+ + Cyclesql 
+      94.0 
+ \textbf{89.0}_{(\uparrow\textbf{3.3})} 
+ \textbf{74.7}_{(\uparrow\textbf{9.2})} 
+ 53.0_{(\downarrow 0.4)} 
+
+ Gpt-3.5-turbo 
+
+ ( 5-shots ) 
+
+ Base 
+      84.3 
+ 78.5 
+ 65.5 
+ 48.2 
+
+ + Cyclesql 
+      86.3_{(\uparrow 2.0)} 
+ \textbf{83.0}_{(\uparrow\textbf{4.5})} 
+ \textbf{73.0}_{(\uparrow\textbf{7.5})} 
+ \textbf{56.0}_{(\uparrow\textbf{7.8})} 
+
+ Gpt-4 
+
+ ( 5-shots ) 
+
+ Base 
+      90.3 
+ 84.3 
+ 63.8 
+ 56.6 
+
+ + Cyclesql 
+      90.7_{(\uparrow 0.4)} 
+ 85.4_{(\uparrow 1.1)} 
+ \textbf{66.7}_{(\uparrow\textbf{2.9})} 
+ \textbf{59.6}_{(\uparrow\textbf{3.0})} 
+
+ Chess 
+ Base 
+      70.2 
+ 25.3 
+ 39.7 
+ 19.3 
+
+ + Cyclesql 
+      \textbf{71.6}_{(\uparrow\textbf{1.4})} 
+ 25.6_{(\uparrow\textbf{0.3})} 
+ \textbf{41.1}_{(\uparrow\textbf{1.4})} 
+ \textbf{21.6}_{(\uparrow\textbf{2.3})} 
+
+ \textsc{{Dailsql}}_{\textsc{{3.5}}} 
+ Base 
+      91.1 
+ 86.5 
+ 77.0 
+ 57.2 
+
+ + Cyclesql 
+      91.1 
+ \textbf{86.8}_{(\uparrow\textbf{0.3})} 
+ \textbf{77.6}_{(\uparrow\textbf{0.6})} 
+ \textbf{59.0}_{(\uparrow\textbf{1.8})} 
+
+ Scalability Evaluation. To improve models’ accuracies, the iterative process involved in Cyclesql may take extra time during the model inference. To assess its accuracy-latency tradeoff, we report the average iterations required by Cyclesql and compare the inference time of baseline models with or without Cyclesql . Note that we make the comparison in an online setting. That is, we assume that all the trained neural network models have already been loaded into the memory. 
+
+Table  8(a) shows that upon integration with Cyclesql , most baselines can find the “best” translation results within 1\sim 2 iterations, except Picard , which may require about 4 iterations due to relatively lower quality of its sampled SQL queries as we mentioned earlier. On the other hand, as depicted in Figure  8(b) , given that each baseline model can generate a list of top-k query candidates in a single inference process, the additional execution time overhead incurred by Cyclesql is minimal 13 13 
+ 13 
+
+ Due to the decoding process of Picard necessitating interaction with a web service to validate each predicted token, the inference time of Picard is time-consuming. Therefore, we omit it from this comparison. . This showcases that Cyclesql strikes a favorable balance between translation and inference latency in its current settings. In addition, the inference time of different models heavily depends on their respective model sizes. For example, SmboP with approximately 360 million parameters, demonstrates notably faster performance compared to \textsc{Resdsql}_{\textsc{3b}} , which boasts around 3 billion parameters. 
+
+ (a) Average iterations of Cyclesql on Spider validation set 
+
+ Average 
+
+ Iterations 
+
+ Smbop 
+
+ (+ Cyclesql ) 
+
+ Picard 
+
+ (+ Cyclesql ) 
+
+ \textsc{Resdsql}_{\textsc{Large}} 
+
+ (+ Cyclesql ) 
+
+ \textsc{Resdsql}_{\textsc{3b}} 
+
+ (+ Cyclesql ) 
+
+ Gpt-3.5-turbo 
+
+ (+ Cyclesql ) 
+
+ 2.44 
+ 3.78 
+ 1.90 
+ 1.88 
+ 1.87 
+
+ 0 200 400 600 800 1{,}000 1{,}200 1{,}400 1{,}600 1{,}800 2{,}000 2{,}200 SmboP \textsc{Resdsql}_{\textsc{Large}} \textsc{Resdsql}_{\textsc{3b}} Gpt-3.5-turbo 
+
+ Average Model Inference Time (ms) 
+
+ + Cyclesql 
+ Base Model 
+ (b) Inference latency comparison with or without Cyclesql 
+
+ Fig. 8 : Scalability evaluation on Cyclesql . 
+
+### V-A 3 Results on Robustness Settings.
+
+To validate the robustness, we use the frozen verifier (trained only once on the Spider training set) and evaluate the performance of Cyclesql on the three Spider variants and ScienceBenchmark . Table  I reports the comprehensive results. 
+
+The results show that Cyclesql can still consistently enhance the performance of the models across all benchmarks. We attribute this to the incorporation of rich semantics from the data into the explanations used to train the verifier and thus exhibit its robustness in terms of question perturbations. Additionally, due to the complexity of queries in ScienceBenchmark , most models perform poorly, with Chess being a notable exception, underscoring the challenge of handling queries in real-world databases. 
+
+### V-A 4 Analysis of Cyclesql 
+
+The two primary components of Cyclesql are feedback , and verifier . To gain a deeper understanding, we perform additional experiments in this section to analyze the importance of these two components. Our exploration centers around the following two key questions: 
+
+ (i) 
+
+ What impact does utilizing a more natural (simpler) approach for generating feedback have on Cyclesql ? 
+
+ (ii) 
+
+ Is the reconstructed NLI model the principled verifier for Cyclesql compared to other alternatives? 
+
+ Impact of Feedback Quality. Self-provided feedback plays a crucial role in Cyclesql . To quantify its impact, we conduct a comparative experiment by adopting a simpler method (i.e., SQL2NL) to generate the feedback for Cyclesql : providing the generated SQL query along with the database schema and asking an LLM 14 14 
+ 14 
+
+ In our experiment, we choose to use Gpt-3.5-turbo for the evaluation. to generate the NL explanation (i.e., feedback) directly. The feedback is then used in a similar way to train the verifier under the same training settings as those employed previously. We compare the performance of Cyclesql with verifiers resulting from different feedback settings, by applying to \textsc{Resdsql}_{\textsc{Large}} and Gpt-3.5-turbo . 
+
+ Spider Realistic Syn Dk 0.6 0.7 0.8 0.9 
+
+ EX Accuracy (%) 
+
+ + Cyclesql Feedback 
+
+ Base Model 
+
+ +SQL2NL Feedback 
+ (a) Execution accuracy results on \textsc{Resdsql}_{\textsc{Large}} 
+
+ Spider Realistic Syn Dk 0.6 0.7 0.8 
+
+ EX Accuracy (%) 
+
+ + Cyclesql Feedback 
+
+ Base Model 
+
+ +SQL2NL Feedback 
+ (b) Execution accuracy results on Gpt-3.5-turbo 
+
+ Fig. 9 : Execution results on two models compared with SQL2NL. 
+
+Figure  9 presents the EX results across the four Spider -related benchmarks. It is evident that relying on the feedback generated by the SQL2NL approach becomes unreliable for the models, which may even lead to a negative impact on their performance when applying to \textsc{Resdsql}_{\textsc{Large}} . The findings emphasize the importance of feedback quality, demonstrating that the feedback generated by the designed approach used in Cyclesql embeds rich semantics, thus establishing a reliable feedback loop inside the NL2SQL process. 
+
+ Impact of Verifier Selection. Concerning the verifier construction crafted within Cyclesql (as outlined in Section IV-D ), a natural question may arise about the necessity of the selected design. Therefore, we select two “strawman” verifiers to replace the one used in Cyclesql : one is a 5-shot prompted Gpt-3.5-turbo , and another is an off-the-shelf pre-built NLI model, named Sembert [ 59 ] . Table  III shows the translation results of Cyclesql embedded with different verifiers by applying to \textsc{Resdsql}_{\textsc{3b}} on Spider validation set. 
+
+As can be seen, the performance under the current setting showcases notable enhancements compared to the other two “strawman” verifiers. It is noteworthy that utilizing the few-shot prompted Gpt-3.5-turbo can also serve as a capable verifier straight out of the box, thereby bringing some benefits to the base model. In addition, due to the disparity between NL-explanation pairs and sentence pairs in public datasets, the pre-trained Sembert model struggles to provide reliable verification outcomes, resulting in adverse effects. 
+
+Additionally, we compute three Oracle scores to estimate future headroom. Assuming a perfect verifier is used, which assigns the label “entailment” only when the translated SQL matches the ground truth, it boosts accuracy to 84.4%, 86.9%, and 82.5% for the three evaluation metrics, respectively. 
+
+ TABLE III : Translation results of different verifier selections. 
+
+ Model Variant 
+ EM 
+ EX 
+ TS 
+
+ Base Model ( \textsc{Resdsql}_{\textsc{3b}} ) 
+ 76.0 
+ 79.4 
+ 73.5 
+
+ + Cyclesql 
+ \textbf{76.8}_{(\uparrow\textbf{0.8})} 
+ \textbf{82.0}_{(\uparrow\uparrow\textbf{2.6})} 
+ \textbf{76.0}_{(\uparrow\uparrow\textbf{2.5})} 
+
+ + Cyclesql (w/ LLM verifier) 
+ 74.9_{(\downarrow 1.1)} 
+ 80.1_{(\uparrow 0.7)} 
+ 73.8_{(\uparrow 0.3)} 
+
+ + Cyclesql (w/ pre-built NLI verifier) 
+ 73.0_{(\downarrow 1.9)} 
+ 77.6_{(\downarrow 1.8)} 
+ 71.7_{(\downarrow 1.8)} 
+
+ + Cyclesql (w/ oracle verifier) 
+ 84.4 
+ 86.9 
+ 82.5 
+
+### V-A 5 Error Analysis
+
+To better understand Cyclesql , we examined the failure translations of Cyclesql (with \textsc{Resdsql}_{\textsc{3b}} ) on Spider validation set. We identify the following two major categories for the failures. 
+
+ • 
+
+ Semantics Drift Problem. Some translation errors stem from inaccurate verification, especially when there is a semantic divergence between parts of the NL query and the generated explanation. This misalignment can cause the validator to misinterpret or “overlook” the entailment relationship, as illustrated in the following example, 
+
+ NL Query: Give the names of countries that are in Europe and 
+
+ have a population equal to 80000. 
+
+ Predicted SQL Query: 
+
+ SELECT name FROM country 
+
+ WHERE continent = 'Europe' AND population >= 8000 
+
+ False-Positive Generated Explanation: 
+
+ The query returns a result set with 1 column (name) and 38 rows, filtered by 
+
+ continent equal to Europe and a population greater than or equal to 80000 . 
+
+ Among them, the result, for example, country, name Estonia, continent is 
+
+ Europe, the population is 1439200 greater than or equal to 80000 . 
+
+ Ground-truth SQL Query: 
+
+ SELECT name FROM country 
+
+ WHERE continent = 'Europe' AND population = 8000 
+
+ Generated Explanation for Ground-truth SQL: 
+
+ The query returns a result set with 1 column (name) and 38 rows, filtered by 
+
+ continent equal to Europe and a population greater than or equal to 80000. 
+
+ Among them, the result, for example, country, name Estonia, continent is 
+
+ Europe, the population is 1439200 equal to 80000. 
+
+Such failures may be mitigated if a more fine-grained supervision signal is provided during validator model training. 
+
+ • 
+
+ Explanation Quality Problem. Another source of translation errors stems from the quality of the generated NL explanation, which may convey inaccurate or incorrect semantics. An illustrative example is provided below, 
+
+ NL Query: Count the number of friends Kyle has. 
+
+ Predicted SQL Query: 
+
+ SELECT count (*) FROM highschooler AS T1 
+
+ JOIN friend AS T2 ON T1.id = T2.friend_id 
+
+ WHERE T1.name = 'Kyle' 
+
+ Ground-truth SQL Query: 
+
+ SELECT count (*) FROM highschooler AS T1 
+
+ JOIN friend AS T2 ON T1.id = T2.student_id 
+
+ WHERE T1.name = 'Kyle' 
+
+ Generated Explanations for both SQL Queries: 
+
+ The query returns a result set with one column with aggregation type (count) 
+
+ and 1 row, filtered by name equal to Kyle. The result, name Kyle, there are 2 
+
+ high schoolers with friends, the number of friends is 2. 
+
+As shown, Cyclesql fails to interpret the semantics of the join conditions, generating the same explanation for both queries, which leads to incorrect validation of the predicted result. As a result, it is imperative to establish a more reliable explanation generation process for Cyclesql . 
+
+ TABLE IV : NL queries, SQLs, to-explained results, and corresponding NL explanations produced by Cyclesql . 
+
+ Natural Language Queries 
+
+ Executed SQL Queries 
+
+ To-explained Query Results 
+
+ Natural Language Explanations 
+
+ Q_{1} : What is the total number of 
+
+ languages used in Aruba? 
+
+ SELECT count (T2.Language) 
+
+ FROM Country AS T1 JOIN Countrylanguage AS T2 
+
+ WHERE T1.name = 'Aruba' 
+
+ count(T2.language) 
+
+ 4 
+
+ The query output is a result set with one column and one 
+
+ row, filtered by country name Aruba. In this specific result, 
+
+ country Aruba, whose country code is ABW, has four 
+
+ spoken languages. So the count of languages is 4. 
+
+ Q_{2} : What is the continent name 
+
+ that Anguilla belongs to? 
+
+ SELECT continent FROM Country WHERE name = 'Anguilla' 
+
+ continent 
+
+ North America 
+
+ The query returns a result set with one column and one row, 
+
+ filtered by country name Anguilla. Here, country Anguilla, 
+
+ belongs to the continent North America. 
+
+ Q_{3} : What are the names of nations 
+
+ speak both English and French? 
+
+ SELECT T1.name FROM Country AS T1 
+
+ JOIN Countrylanguage AS T2 ON T1.code = T2.countrycode 
+
+ WHERE T2.language = 'English' INTERSECT 
+
+ SELECT T1.name FROM Country AS T1 
+
+ JOIN Countrylanguage AS T2 ON T1.code = T2.countrycode 
+
+ WHERE T2.language = 'French' 
+
+ T1.name 
+
+ Seychelles 
+
+ The query output is a result set with one column and 6 rows, 
+
+ filtered by language English or French. Among them, for 
+
+ example, country Seychelles, where its country languages 
+
+ include English and French. 
+
+ Q_{4} : Which cities are in European 
+
+ countries where English is not 
+
+ the official language? 
+
+ SELECT DISTINCT T2.name FROM Country AS T1 
+
+ JOIN City AS T2 ON T1.code = T2.countrycode 
+
+ WHERE T1.Continent = 'Europe' AND T1.Name NOT IN ( 
+
+     SELECT T3.name FROM Country AS T3 
+
+     JOIN Countrylanguage AS T4 ON T3.code = T4.countrycode 
+
+     WHERE T4.isofficial = 'T' AND T4.language = 'English' ) 
+
+ T2.name 
+
+ Nabereznyje Tšelny 
+
+ The query output is a result set with one column comprising 
+
+ 753 rows, filtered by continent Europe and excludes entries 
+
+ that official is not T and language is English. In this specific 
+
+ result, for example, the city Nabereznyje Tšelny in the 
+
+ Russian Federation, situated in Europe and not meeting the 
+
+ specified language and official status criteria. 
+
+ Q_{5} : Return the country name and 
+
+ the numbers of languages spoken 
+
+ for each country that speaks at 
+
+ least 3 languages. 
+
+ SELECT count (T2.language), T1.name FROM Country AS T1 
+
+ JOIN Countrylanguage AS T2 ON T1.code = T2.countrycode 
+
+ GROUP BY T1.name HAVING count (*) > 2 
+
+ count(T2.language) 
+ T1.name 
+
+ 5 
+ Iraq 
+
+ The query result has two columns with 149 rows, filtered by 
+
+ country language greater than 2. Among these results, 149 
+
+ entries have 2 more languages, and for the specific example 
+
+ provided, the country Iraq has 5 spoken languages. 
+
+### V-B Qualitative Evaluation 
+
+The NL explanation introduced in Cyclesql is designed to rationalize the query result and hence provides meaningful information to understand the overall NL2SQL translation. An inherent query may be raised: Can the semantics expressed in the NL explanation help users understand existing black-box NL2SQL translation? Therefore, we further evaluate the quality of explanations produced by Cyclesql using a case study and a user study on the database (named world_1 ) in Spider benchmark to answer the question. 
+
+Note that in order to enhance the fluency of NL explanations for users, we choose to use a “polishing model” to help refine the explanations further. Despite many studies on text deliberation [ 69 , 70 ] , it is noteworthy that recent emergent LLMs have showcased superior text deliberation capabilities [ 71 , 72 ] . Hence, we simply use the 5 -shot prompted Gpt-3.5-turbo LLM (with simple human-written instructions) as the “polishing model” to enhance the NL explanations and use the refined explanations for the subsequent evaluations. 
+
+### V-B 1 Case Study.
+
+The world_1 dataset is an SQLite database provided by Spider . It provides an overview of the global city and country data, facilitating queries on various aspects of worldwide demographics and linguistic diversity. The database contains 4 relational tables and about 5000 data rows. 
+
+ Setup. Since the Spider benchmark includes 120 NL-SQL pairs for the world_1 database, we selected five queries from the benchmark for this evaluation. To show NL explanations generated by Cyclesql for different types of queries, we simply cluster the pairs based on the structures of SQL queries and randomly choose five query pairs from each cluster. Table  IV shows the NL queries , executed SQL queries , to-explained query results , and the NL explanations returned by Cyclesql for these selected queries. 
+
+ Analysis. We analyze each example as follows: 
+
+ • 
+
+ Q_{1} : This question inquires about the total number of spoken languages in the country Aruba. The explanation first describes the result set and then explains that for the country, Aruba, the total number of its spoken languages is 4 . 
+
+ • 
+
+ Q_{2} : Retrieve the continent name with the country Anguilla. The NL explanation is simple and concise, which tells the country Anguilla should belong to North America. Note that for those simple queries, the NL explanation generated by Cyclesql may be similar to other explanation methods, such as the SQL2NL method we introduced before. 
+
+ • 
+
+ Q_{3} : This NL query asks to find the nation name that satisfies its condition of “ speak both English and French ”. While the underlying executed SQL query is complex, involving an INTERSECT set operation that combines two queries, the NL explanation is straightforward and precisely elucidates why Seychelles is one of the query results. 
+
+ • 
+
+ Q_{4} : The negation question asks for European cities that do not use English as their official language. Although the NL explanation initially presents the filtering conditions somewhat incoherently, it summarizes that 753 countries meet these criteria. Following this, the explanation specifies that the city Nabereznyje Tšelny is located in Europe and fails to meet the language and official criteria. Despite the obscurity surrounding the “ English ” filtering condition in the NL explanation, it still offers valuable insights to help users comprehend the query result. 
+
+ • 
+
+ Q_{5} : The question aims to identify countries with at least 3 spoken languages. The explanation centers on the result of the country Iraq. It first provides an overall total number of the countries that speak two or more languages (i.e., 149 countries). Then, the explanation shifts its focus to the country Iraq, stating that Iraq speaks 5 languages in total. 
+
+### V-B 2 User Study.
+
+Next, we report a user study to assess the quality of the explanations generated by Cyclesql for the five queries selected from the world_1 database. We focus on addressing the main inquiry: whether Cyclesql provides meaningful explanations for users to understand query results, hence the underlying translations. 
+
+ Participants and Tasks. We enlisted the participation of 20 computer science students who have prior knowledge of SQL or have taken graduate-level database courses to join the assessment procedure. Initially, participants were briefed about the background of the study and showed the schema of the database. We then provided an exemplary query with a “perfect” explanation (human-written) to illustrate the evaluation process. Participants were then tasked to assign scores, ranging from 1 to 10 , to each explanation for every query. The explanations were provided either by Cyclesql or the simpler method with Gpt-3.5-turbo as we described in Section  V-A4 . Participants are mainly considered in two aspects (refer to Table  10(a) ) and provided an overall rating. To simplify the analysis, we computed average scores for each query and also summarized the results (in the form of , , and ). Here, denotes “great” for scores ranging from 7 to 10 , denotes “neutral” representing scores ranging from 3 to 7 , and denotes “bad” for scores between 0 and 3 . Figure  10 shows the results for this user study. 
+
+ Results and Analysis. The feedback is positive for Cyclesql : 14 out of 20 participants agreed that the explanations generated by Cyclesql are more comprehensible to them compared with the ones from Gpt-3.5-turbo . Moreover, the average rating scores consistently surpass those of Gpt-3.5-turbo , as illustrated in Figure  10(b) . More importantly, participants confirmed that examining these explanations can greatly assist them in understanding the reasons behind the query results and may enable them to detect potential translation errors that happened with the underlying NL2SQL process. 
+
+ (a) Summarized results on NL explanations by users. 
+
+ Dimension 
+ Gpt-3.5-turbo 
+ Cyclesql 
+
+ Q_{1} 
+ Q_{2} 
+ Q_{3} 
+ Q_{4} 
+ Q_{5} 
+ Q_{1} 
+ Q_{2} 
+ Q_{3} 
+ Q_{4} 
+ Q_{5} 
+
+ Query result interpretability 
+
+ Textual entailment with NL 
+
+ Overall Ratings 
+
+ Q_{1} Q_{2} Q_{3} Q_{4} Q_{5} 2 4 6 8 10 
+
+ Average Score 
+ (b) Average ratings with white boxes indicating ratings for explanations by Gpt-3.5-turbo and gray boxes for Cyclesql . 
+
+ Fig. 10 : User study results 
+
+ Discussion. While Cyclesql provides an autonomous feedback loop in its current form, the findings suggest that the NL explanation can also serve as feedback for humans when interacting with NLIDBs, facilitating real-time adaptions based on human inputs. In future work, we intend to further explore the human feedback loop in the context of NL2SQL. 
+
+### VI Related Work 
+
+ Natural Language Interface for Database. NLIDBs have been studied both in the database management and NLP communities. Many machine learning-based approaches treat the NL2SQL problem as a Seq2seq translation task and leverage the encoder-decoder architecture to do the translation [ 6 , 7 , 12 , 11 , 13 , 73 , 74 , 14 , 15 , 17 , 67 , 75 , 76 ] . With the excellent performance of LLMs in various NLP tasks, recent works have explored applying LLMs to the NL2SQL task [ 40 , 41 , 19 , 77 , 20 ] , mostly in an end-to-end manner. 
+
+Instead of generating the target queries end-to-end, Cyclesql aims to create a feedback loop within the translation process, enabling the potential to find a better SQL outcome. 
+
+ Explanations for Query Answers. This line of research aims to explain query outcomes, including missing tuples, outlier values, or returned tuples. Provenance provides a direct method of explanation by characterizing a set of tuples contributing to the target query answer [ 78 , 79 , 33 , 34 , 50 , 80 , 51 ] . Prior works [ 78 , 79 ] have explored both “why” and “why-not” questions through query-based explanation methods that make changes to queries. The frameworks proposed by [ 81 , 82 , 83 ] address explanations for outlier values, particularly in aggregate query results, which present explanations as compact summaries of relevant tuples. Conversely, [ 80 , 51 ] delve into explanations for outliers beyond provenance, exploring learning patterns or augmenting provenance. 
+
+Explanations for returned tuples have been studied in [ 33 , 34 ] , with an emphasis on formulating the provenance of output tuples in NL, either in factorized or summarized form. We align with their motivations in considering explanations in NL, but step further to utilize these explanations back to the NL2SQL translation process, thereby providing self-generated feedback to enhance the underlying translation accuracy. 
+
+### VII Conclusion & Future Work 
+
+In this paper, we proposed an iterative framework named Cyclesql for existing end-to-end models to autonomously generate the best output using NL explanations as self-provided feedback. Cyclesql initials by tracking data provenance information and query semantics for a given query result and utilizes text generation technique to generate an NL explanation. The NL explanation is then used to validate the correctness of the underlying NL2SQL translation, ultimately resulting in a better translation outcome. We conducted extensive experiments to study the effectiveness of Cyclesql on five public benchmarks. The results showed Cyclesql could consistently improve the translation performance of the existing seven end-to-end models on these benchmarks. Moreover, we conduct additional qualitative experiments with a case study and a user study to analyze the quality of the explanations, which gain more insights on Cyclesql . 
+
+While Cyclesql has demonstrated its effectiveness in its current form, these findings underscore the necessity for further future efforts in this direction. One potential area of investigation is how to close the feedback loop with human involvement, enabling Cyclesql to better align with humans and adapt its translation over time. In addition, developing a more reliable way to assist data tracking in Cyclesql is critical for Cyclesql , especially in better supporting empty-result queries. Finally, an intended future research direction involves exploring an effective way to incorporate fine-grained semantics both in NL queries and explanations during the training of the NLI model, thereby enhancing its resilience in managing comparable translations. 
+
+### References
+
+ [1] 
+
+I. Androutsopoulos, G. D. Ritchie, and P. Thanisch, “Natural language interfaces to databases - an introduction,” Nat. Lang. Eng. , no. 1, pp. 29–81, 1995.
+
+ [2] 
+
+A. Popescu, O. Etzioni, and H. A. Kautz, “Towards a theory of natural language interfaces to databases,” in IUI , 2003, pp. 149–157.
+
+ [3] 
+
+C. Lehmann, D. Gehrig, S. Holdener, C. Saladin, J. P. Monteiro, and K. Stockinger, “Building natural language interfaces for databases in practice,” in SSDBM , 2022, pp. 20:1–20:4.
+
+ [4] 
+
+C. T. Hemphill, J. J. Godfrey, and G. R. Doddington, “The ATIS spoken language systems pilot corpus,” in HLT , 1990.
+
+ [5] 
+
+J. M. Zelle and R. J. Mooney, “Learning to parse database queries using inductive logic programming,” in AAAI , 1996.
+
+ [6] 
+
+V. Zhong, C. Xiong, and R. Socher, “Seq2sql: Generating structured queries from natural language using reinforcement learning,” CoRR , 2017.
+
+ [7] 
+
+T. Yu, R. Zhang, K. Yang, M. Yasunaga, D. Wang, Z. Li, J. Ma, I. Li, Q. Yao, S. Roman, Z. Zhang, and D. R. Radev, “Spider: A large-scale human-labeled dataset for complex and cross-domain semantic parsing and text-to-sql task,” in EMNLP , 2018.
+
+ [8] 
+
+F. Ozcan, A. Quamar, J. Sen, C. Lei, and V. Efthymiou, “State of the art and open challenges in natural language interfaces to data,” in SIGMOD , 2020, pp. 2629–2636.
+
+ [9] 
+
+H. Kim, B. So, W. Han, and H. Lee, “Natural language to SQL: where are we today?” Proc. VLDB Endow. , vol. 13, no. 10, pp. 1737–1750, 2020.
+
+ [10] 
+
+X. Xu, C. Liu, and D. Song, “Sqlnet: Generating structured queries from natural language without reinforcement learning,” CoRR , 2017.
+
+ [11] 
+
+J. Guo, Z. Zhan, Y. Gao, Y. Xiao, J. Lou, T. Liu, and D. Zhang, “Towards complex text-to-sql in cross-domain database with intermediate representation,” in ACL , A. Korhonen, D. R. Traum, and L. Màrquez, Eds., 2019, pp. 4524–4535.
+
+ [12] 
+
+B. Bogin, J. Berant, and M. Gardner, “Representing schema structure with graph neural networks for text-to-sql parsing,” in ACL , 2019, pp. 4560–4565.
+
+ [13] 
+
+B. Wang, R. Shin, X. Liu, O. Polozov, and M. Richardson, “RAT-SQL: relation-aware schema encoding and linking for text-to-sql parsers,” in ACL , 2020, pp. 7567–7578.
+
+ [14] 
+
+O. Rubin and J. Berant, “Smbop: Semi-autoregressive bottom-up semantic parsing,” in NAACL-HLT , 2021, pp. 311–324.
+
+ [15] 
+
+R. Cao, L. Chen, Z. Chen, Y. Zhao, S. Zhu, and K. Yu, “LGESQL: line graph enhanced text-to-sql model with mixed local and non-local relations,” in ACL/IJCNLP , 2021, pp. 2541–2555.
+
+ [16] 
+
+T. Scholak, N. Schucher, and D. Bahdanau, “PICARD: Parsing incrementally for constrained auto-regressive decoding from language models,” in EMNLP , 2021, pp. 9895–9901.
+
+ [17] 
+
+H. Li, J. Zhang, C. Li, and H. Chen, “RESDSQL: decoupling schema linking and skeleton parsing for text-to-sql,” in AAAI , 2023, pp. 13 067–13 075.
+
+ [18] 
+
+OpenAI, “GPT-4 technical report,” CoRR , 2023.
+
+ [19] 
+
+M. Pourreza and D. Rafiei, “DIN-SQL: decomposed in-context learning of text-to-sql with self-correction,” in NeurIPS , A. Oh, T. Naumann, A. Globerson, K. Saenko, M. Hardt, and S. Levine, Eds., 2023.
+
+ [20] 
+
+R. Sun, S. Ö. Arik, H. Nakhost, H. Dai, R. Sinha, P. Yin, and T. Pfister, “Sql-palm: Improved large language model adaptation for text-to-sql,” CoRR , vol. abs/2306.00739, 2023.
+
+ [21] 
+
+X. Dong, C. Zhang, Y. Ge, Y. Mao, Y. Gao, L. Chen, J. Lin, and D. Lou, “C3: zero-shot text-to-sql with chatgpt,” CoRR , 2023.
+
+ [22] 
+
+D. Gao, H. Wang, Y. Li, X. Sun, Y. Qian, B. Ding, and J. Zhou, “Text-to-sql empowered by large language models: A benchmark evaluation,” CoRR , vol. abs/2308.15363, 2023.
+
+ [23] 
+
+A. Sinha, D. F. Gleich, and K. Ramani, “Deconvolving feedback loops in recommender systems,” in NeurIPS , 2016, pp. 3243–3251.
+
+ [24] 
+
+M. Mansoury, H. Abdollahpouri, M. Pechenizkiy, B. Mobasher, and R. Burke, “Feedback loop and bias amplification in recommender systems,” in CIKM , 2020, pp. 2145–2148.
+
+ [25] 
+
+M. Reid and G. Neubig, “Learning to model editing processes,” in Findings of the Association for Computational Linguistics: EMNLP 2022, Abu Dhabi, United Arab Emirates, December 7-11, 2022 , Y. Goldberg, Z. Kozareva, and Y. Zhang, Eds. Association for Computational Linguistics, 2022, pp. 3822–3832. [Online]. Available: https://doi.org/10.18653/v1/2022.findings-emnlp.280 
+
+ [26] 
+
+A. Madaan, N. Tandon, P. Gupta, S. Hallinan, L. Gao, S. Wiegreffe, U. Alon, N. Dziri, S. Prabhumoye, Y. Yang, S. Welleck, B. P. Majumder, S. Gupta, A. Yazdanbakhsh, and P. Clark, “Self-refine: Iterative refinement with self-feedback,” CoRR , vol. abs/2303.17651, 2023. [Online]. Available: https://doi.org/10.48550/arXiv.2303.17651 
+
+ [27] 
+
+R. Sennrich, B. Haddow, and A. Birch, “Improving neural machine translation models with monolingual data,” in ACL , 2016.
+
+ [28] 
+
+S. Edunov, M. Ott, M. Auli, and D. Grangier, “Understanding back-translation at scale,” in EMNLP , 2018, pp. 489–500.
+
+ [29] 
+
+P. von Däniken, J. Deriu, E. Agirre, U. Brunner, M. Cieliebak, and K. Stockinger, “Improving nl-to-query systems through re-ranking of semantic hypothesis,” in ICNLSP , M. Abbas and A. A. Freihat, Eds. Association for Computational Linguistics, 2022, pp. 57–67.
+
+ [30] 
+
+Y. Zhang, J. Deriu, G. Katsogiannis-Meimarakis, C. Kosten, G. Koutrika, and K. Stockinger, “Sciencebenchmark: A complex real-world benchmark for evaluating natural language to SQL systems,” Proc. VLDB Endow. , vol. 17, no. 4, pp. 685–698, 2023.
+
+ [31] 
+
+X. Chen, M. Lin, N. Schärli, and D. Zhou, “Teaching large language models to self-debug,” CoRR , vol. abs/2304.05128, 2023.
+
+ [32] 
+
+S. Talaei, M. Pourreza, Y. Chang, A. Mirhoseini, and A. Saberi, “CHESS: contextual harnessing for efficient SQL synthesis,” CoRR , vol. abs/2405.16755, 2024.
+
+ [33] 
+
+D. Deutch, N. Frost, and A. Gilad, “Provenance for natural language queries,” Proc. VLDB Endow. , vol. 10, no. 5, pp. 577–588, 2017.
+
+ [34] 
+
+——, “Explaining natural language query results,” VLDB J. , vol. 29, no. 1, pp. 485–508, 2020.
+
+ [35] 
+
+Y. Fan, Z. He, T. Ren, D. Guo, L. Chen, R. Zhu, G. Chen, Y. Jing, K. Zhang, and X. S. Wang, “Gar: A generate-and-rank approach for natural language to SQL translation,” in ICDE , 2023, pp. 110–122.
+
+ [36] 
+
+X. Deng, A. H. Awadallah, C. Meek, O. Polozov, H. Sun, and M. Richardson, “Structure-grounded pretraining for text-to-sql,” in NAACL-HLT , 2021, pp. 1337–1350.
+
+ [37] 
+
+Y. Gan, X. Chen, Q. Huang, M. Purver, J. R. Woodward, J. Xie, and P. Huang, “Towards robustness of text-to-sql models against synonym substitution,” in ACL , 2021, pp. 2505–2515.
+
+ [38] 
+
+Y. Gan, X. Chen, and M. Purver, “Exploring underexplored limitations of cross-domain text-to-sql generalization,” in EMNLP , 2021, pp. 8926–8931.
+
+ [39] 
+
+I. Sutskever, O. Vinyals, and Q. V. Le, “Sequence to sequence learning with neural networks,” in NeurIPS , 2014, pp. 3104–3112.
+
+ [40] 
+
+N. Rajkumar, R. Li, and D. Bahdanau, “Evaluating the text-to-sql capabilities of large language models,” CoRR , vol. abs/2204.00498, 2022.
+
+ [41] 
+
+A. Liu, X. Hu, L. Wen, and P. S. Yu, “A comprehensive evaluation of chatgpt’s zero-shot text-to-sql capability,” CoRR , vol. abs/2303.13547, 2023.
+
+ [42] 
+
+Z. Gu, J. Fan, N. Tang, S. Zhang, Y. Zhang, Z. Chen, L. Cao, G. Li, S. Madden, and X. Du, “Interleaving pre-trained language models and large language models for zero-shot NL2SQL generation,” CoRR , vol. abs/2306.08891, 2023.
+
+ [43] 
+
+J. Cheney, L. Chiticariu, and W. C. Tan, “Provenance in databases: Why, how, and where,” Found. Trends Databases , vol. 1, no. 4, pp. 379–474, 2009.
+
+ [44] 
+
+T. J. Green, G. Karvounarakis, and V. Tannen, “Provenance semirings,” in Principles of Database Systems (PODS) . ACM, 2007, pp. 31–40.
+
+ [45] 
+
+J. Cheney, L. Chiticariu, and W. C. Tan, “Provenance in databases: Why, how, and where,” Found. Trends Databases , vol. 1, no. 4, pp. 379–474, 2009.
+
+ [46] 
+
+Y. R. Wang and S. E. Madnick, “A polygen model for heterogeneous database systems: The source tagging perspective,” in VLDB , 1990, pp. 519–538.
+
+ [47] 
+
+P. Buneman, S. Khanna, and W. C. Tan, “Why and where: A characterization of data provenance,” in ICDT , vol. 1973, 2001, pp. 316–330.
+
+ [48] 
+
+Y. Cui, J. Widom, and J. L. Wiener, “Tracing the lineage of view data in a warehousing environment,” ACM Trans. Database Syst. , vol. 25, no. 2, pp. 179–227, 2000.
+
+ [49] 
+
+T. J. Green, G. Karvounarakis, and V. Tannen, “Provenance semirings,” in PODS . ACM, 2007, pp. 31–40.
+
+ [50] 
+
+D. Deutch, N. Frost, A. Gilad, and T. Haimovich, “Explaining missing query results in natural language,” in EDBT , 2020, pp. 427–430.
+
+ [51] 
+
+C. Li, Z. Miao, Q. Zeng, B. Glavic, and S. Roy, “Putting things into context: Rich explanations for query answers using join graphs,” in SIGMOD , 2021, pp. 1051–1063.
+
+ [52] 
+
+Y. Cui, J. Widom, and J. L. Wiener, “Tracing the lineage of view data in a warehousing environment,” ACM Trans. Database Syst. , vol. 25, no. 2, pp. 179–227, 2000. [Online]. Available: https://doi.org/10.1145/357775.357777 
+
+ [53] 
+
+B. Glavic, R. J. Miller, and G. Alonso, “Using SQL for efficient generation and querying of provenance information,” in In Search of Elegance in the Theory and Practice of Computation - Essays Dedicated to Peter Buneman , ser. Lecture Notes in Computer Science, vol. 8000, 2013, pp. 291–320.
+
+ [54] 
+
+A. Rani, N. Goyal, and S. K. Gadia, “Data provenance for historical queries in relational database,” in ACM India Conference , 2015, pp. 117–122.
+
+ [55] 
+
+G. Koutrika, A. Simitsis, and Y. E. Ioannidis, “Explaining structured queries in natural language,” in ICDE , 2010.
+
+ [56] 
+
+I. Dagan, O. Glickman, and B. Magnini, “The PASCAL recognising textual entailment challenge,” in MLCW , ser. Lecture Notes in Computer Science, vol. 3944, 2005, pp. 177–190.
+
+ [57] 
+
+N. Sharma, R. Sharma, and K. K. Biswas, “Recognizing textual entailment using dependency analysis and machine learning,” in NAACL , 2015, pp. 147–153.
+
+ [58] 
+
+H. Touvron, T. Lavril, G. Izacard, X. Martinet, M. Lachaux, T. Lacroix, B. Rozière, N. Goyal, E. Hambro, F. Azhar, A. Rodriguez, A. Joulin, E. Grave, and G. Lample, “Llama: Open and efficient foundation language models,” CoRR , vol. abs/2302.13971, 2023.
+
+ [59] 
+
+Z. Zhang, Y. Wu, H. Zhao, Z. Li, S. Zhang, X. Zhou, and X. Zhou, “Semantics-aware BERT for language understanding,” in AAAI , 2020, pp. 9628–9635.
+
+ [60] 
+
+S. Wang, H. Fang, M. Khabsa, H. Mao, and H. Ma, “Entailment as few-shot learner,” CoRR , vol. abs/2104.14690, 2021.
+
+ [61] 
+
+A. Yates, R. F. Nogueira, and J. Lin, “Pretrained transformers for text ranking: BERT and beyond,” in SIGIR , 2021, pp. 2666–2668.
+
+ [62] 
+
+A. Simitsis, G. Koutrika, Y. Alexandrakis, and Y. E. Ioannidis, “Synthesizing structured text from logical database subsets,” in EDBT , vol. 261, 2008, pp. 428–439.
+
+ [63] 
+
+T. Lin, P. Goyal, R. B. Girshick, K. He, and P. Dollár, “Focal loss for dense object detection,” IEEE Trans. Pattern Anal. Mach. Intell. , vol. 42, no. 2, pp. 318–327, 2020. [Online]. Available: https://doi.org/10.1109/TPAMI.2018.2858826 
+
+ [64] 
+
+T. Yu, C. Wu, X. V. Lin, B. Wang, Y. C. Tan, X. Yang, D. R. Radev, R. Socher, and C. Xiong, “Grappa: Grammar-augmented pre-training for table semantic parsing,” in ICLR , 2021.
+
+ [65] 
+
+C. Raffel, N. Shazeer, A. Roberts, K. Lee, S. Narang, M. Matena, Y. Zhou, W. Li, and P. J. Liu, “Exploring the limits of transfer learning with a unified text-to-text transformer,” J. Mach. Learn. Res. , vol. 21, pp. 140:1–140:67, 2020.
+
+ [66] 
+
+Y. Gan, X. Chen, J. Xie, M. Purver, J. R. Woodward, J. H. Drake, and Q. Zhang, “Natural SQL: making SQL easier to infer from natural language specifications,” in EMNLP , 2021, pp. 2030–2042.
+
+ [67] 
+
+J. Li, B. Hui, R. Cheng, B. Qin, C. Ma, N. Huo, F. Huang, W. Du, L. Si, and Y. Li, “Graphix-t5: Mixing pre-trained transformers with graph-aware layers for text-to-sql parsing,” in AAAI , 2023, pp. 13 076–13 084.
+
+ [68] 
+
+R. Zhong, T. Yu, and D. Klein, “Semantic evaluation for text-to-sql with distilled test suites,” in EMNLP , 2020, pp. 396–411.
+
+ [69] 
+
+J. Niehues, E. Cho, T. Ha, and A. Waibel, “Pre-translation for neural machine translation,” in COLING . ACL, 2016, pp. 1828–1836.
+
+ [70] 
+
+Y. Xia, F. Tian, L. Wu, J. Lin, T. Qin, N. Yu, and T. Liu, “Deliberation networks: Sequence generation beyond one-pass decoding,” in NeurIPS , 2017, pp. 1784–1794.
+
+ [71] 
+
+T. B. Brown, B. Mann, N. Ryder, M. Subbiah, J. Kaplan, P. Dhariwal, A. Neelakantan, P. Shyam, G. Sastry, A. Askell, S. Agarwal, A. Herbert-Voss, G. Krueger, T. Henighan, R. Child, A. Ramesh, D. M. Ziegler, J. Wu, C. Winter, C. Hesse, M. Chen, E. Sigler, M. Litwin, S. Gray, B. Chess, J. Clark, C. Berner, S. McCandlish, A. Radford, I. Sutskever, and D. Amodei, “Language models are few-shot learners,” in NeurIPS , 2020.
+
+ [72] 
+
+L. Ouyang, J. Wu, X. Jiang, D. Almeida, C. L. Wainwright, P. Mishkin, C. Zhang, S. Agarwal, K. Slama, A. Ray, J. Schulman, J. Hilton, F. Kelton, L. Miller, M. Simens, A. Askell, P. Welinder, P. F. Christiano, J. Leike, and R. Lowe, “Training language models to follow instructions with human feedback,” in NeurIPS , 2022.
+
+ [73] 
+
+T. Yu, C. Wu, X. V. Lin, B. Wang, Y. C. Tan, X. Yang, D. R. Radev, R. Socher, and C. Xiong, “Grappa: Grammar-augmented pre-training for table semantic parsing,” CoRR , 2020.
+
+ [74] 
+
+X. V. Lin, R. Socher, and C. Xiong, “Bridging textual and tabular data for cross-domain text-to-sql semantic parsing,” in EMNLP , 2020, pp. 4870–4888.
+
+ [75] 
+
+H. Fu, C. Liu, B. Wu, F. Li, J. Tan, and J. Sun, “Catsql: Towards real world natural language to SQL applications,” Proc. VLDB Endow. , vol. 16, no. 6, pp. 1534–1547, 2023.
+
+ [76] 
+
+Y. Fu, W. Ou, Z. Yu, and Y. Lin, “MIGA: A unified multi-task generation framework for conversational text-to-sql,” CoRR , vol. abs/2212.09278, 2022.
+
+ [77] 
+
+Z. Gu, J. Fan, N. Tang, S. Zhang, Y. Zhang, Z. Chen, L. Cao, G. Li, S. Madden, and X. Du, “Interleaving pre-trained language models and large language models for zero-shot NL2SQL generation,” CoRR , vol. abs/2306.08891, 2023.
+
+ [78] 
+
+A. Chapman and H. V. Jagadish, “Why not?” in SIGMOD , 2009, pp. 523–534.
+
+ [79] 
+
+N. Bidoit, M. Herschel, and K. Tzompanaki, “Query-based why-not provenance with nedexplain,” in EDBT , 2014, pp. 145–156.
+
+ [80] 
+
+Z. Miao, Q. Zeng, B. Glavic, and S. Roy, “Going beyond provenance: Explaining query answers with pattern-based counterbalances,” in SIGMOD , 2019, pp. 485–502.
+
+ [81] 
+
+E. Wu and S. Madden, “Scorpion: Explaining away outliers in aggregate queries,” Proc. VLDB Endow. , vol. 6, no. 8, pp. 553–564, 2013.
+
+ [82] 
+
+S. Roy and D. Suciu, “A formal approach to finding explanations for database queries,” in SIGMOD , 2014, pp. 1579–1590.
+
+ [83] 
+
+S. Roy, L. J. Orr, and D. Suciu, “Explaining query answers with explanation-ready databases,” Proc. VLDB Endow. , vol. 9, no. 4, pp. 348–359, 2015.
+
+ Experimental support, please
+ view the build logs 
+ for errors. Generated by
+
+ L
+ A 
+ T
+ E 
+
+ xml 
+
+ .
+
+### Instructions for reporting errors
+
+We are continuing to improve HTML versions of papers, and your feedback helps enhance accessibility and mobile
+ support. To report errors in the HTML that will help us improve conversion and rendering, choose any of the
+ methods listed below: 
+
+Click the "Report Issue" ( 
+
+ ) button, located in the page header. 
+
+ Tip: You can select the relevant text first, to include it in your report. 
+
+Our team has already identified the following issues . We appreciate your time reviewing and reporting rendering errors we
+ may not have found yet. Your efforts will help us improve the HTML versions for all readers, because disability
+ should not be a barrier to accessing research. Thank you for your continued support in championing open access for
+ all. 
+
+Have a free development cycle? Help support accessibility at arXiv! Our collaborators at LaTeXML maintain a list of packages that need conversion , and welcome developer contributions . 
+
+ We gratefully acknowledge support from
+ our major funders ,
+ member institutions , ,
+ and all contributors.
+
+ About 
+ · 
+ Help 
+ · 
+ Contact 
+ · 
+ Subscribe 
+ · 
+ Copyright 
+ · 
+ Privacy 
+ · 
+ Accessibility 
+ · 
+ Operational Status (opens in new tab) 
+
+Major funding support from 
+

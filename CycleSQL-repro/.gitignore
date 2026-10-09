@@ -1,0 +1,13 @@
+# secrets — never commit
+work/.env
+
+# large binary assets: fetch them instead (see work/fetch_spider_dbs.sh)
+data/spider/database/**/*.sqlite
+
+# transient run artefacts
+outputs/_smoke/
+outputs/_rerun/
+work/*.log
+work/*.parquet
+__pycache__/
+*.pyc

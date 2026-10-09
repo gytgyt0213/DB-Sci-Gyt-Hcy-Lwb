@@ -1,0 +1,10 @@
+{
+  "baseline_top1": {
+    "log": "E:\\DB_Homework\\DB-Science\\CycleSQL-repro\\work\\logs\\eval_baseline_top1.log",
+    "returncode": 0
+  },
+  "cyclesql": {
+    "log": "E:\\DB_Homework\\DB-Science\\CycleSQL-repro\\work\\logs\\eval_cyclesql.log",
+    "returncode": 0
+  }
+}

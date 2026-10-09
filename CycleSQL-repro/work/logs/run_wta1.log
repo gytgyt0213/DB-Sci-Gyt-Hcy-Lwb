@@ -1,0 +1,119 @@
+[info] 62 of 1034 dev questions selected (1 databases)
+  File "E:\DB_Homework\DB-Science\CycleSQL-repro\work\run_infer_llm.py", line 303, in main
+    p_sql, _ = get_sql(schema2ids, sql)
+  File "E:\DB_Homework\DB-Science\CycleSQL-repro\src_repo\CycleSQL-main\spider_utils\process_sql.py", line 555, in get_sql
+    _, sql = parse_sql(toks, 0, tables_with_alias, schema)
+  File "E:\DB_Homework\DB-Science\CycleSQL-repro\src_repo\CycleSQL-main\spider_utils\process_sql.py", line 510, in parse_sql
+    _, select_col_units = parse_select(toks, idx, tables_with_alias, schema, default_tables)
+  File "E:\DB_Homework\DB-Science\CycleSQL-repro\src_repo\CycleSQL-main\spider_utils\process_sql.py", line 360, in parse_select
+    idx, val_unit = parse_val_unit(toks, idx, tables_with_alias, schema, default_tables)
+  File "E:\DB_Homework\DB-Science\CycleSQL-repro\src_repo\CycleSQL-main\spider_utils\process_sql.py", line 243, in parse_val_unit
+    idx, col_unit1 = parse_col_unit(toks, idx, tables_with_alias, schema, default_tables)
+  File "E:\DB_Homework\DB-Science\CycleSQL-repro\src_repo\CycleSQL-main\spider_utils\process_sql.py", line 222, in parse_col_unit
+    idx, col_id = parse_col(toks, idx, tables_with_alias, schema, default_tables)
+  File "E:\DB_Homework\DB-Science\CycleSQL-repro\src_repo\CycleSQL-main\spider_utils\process_sql.py", line 190, in parse_col
+    assert False, "Error col: {}".format(tok)
+AssertionError: Error col: tournament_name
+  File "E:\DB_Homework\DB-Science\CycleSQL-repro\work\run_infer_llm.py", line 303, in main
+    p_sql, _ = get_sql(schema2ids, sql)
+  File "E:\DB_Homework\DB-Science\CycleSQL-repro\src_repo\CycleSQL-main\spider_utils\process_sql.py", line 555, in get_sql
+    _, sql = parse_sql(toks, 0, tables_with_alias, schema)
+  File "E:\DB_Homework\DB-Science\CycleSQL-repro\src_repo\CycleSQL-main\spider_utils\process_sql.py", line 510, in parse_sql
+    _, select_col_units = parse_select(toks, idx, tables_with_alias, schema, default_tables)
+  File "E:\DB_Homework\DB-Science\CycleSQL-repro\src_repo\CycleSQL-main\spider_utils\process_sql.py", line 360, in parse_select
+    idx, val_unit = parse_val_unit(toks, idx, tables_with_alias, schema, default_tables)
+  File "E:\DB_Homework\DB-Science\CycleSQL-repro\src_repo\CycleSQL-main\spider_utils\process_sql.py", line 243, in parse_val_unit
+    idx, col_unit1 = parse_col_unit(toks, idx, tables_with_alias, schema, default_tables)
+  File "E:\DB_Homework\DB-Science\CycleSQL-repro\src_repo\CycleSQL-main\spider_utils\process_sql.py", line 222, in parse_col_unit
+    idx, col_id = parse_col(toks, idx, tables_with_alias, schema, default_tables)
+  File "E:\DB_Homework\DB-Science\CycleSQL-repro\src_repo\CycleSQL-main\spider_utils\process_sql.py", line 190, in parse_col
+    assert False, "Error col: {}".format(tok)
+AssertionError: Error col: tournament_name
+Traceback (most recent call last):
+  File "E:\DB_Homework\DB-Science\CycleSQL-repro\work\run_infer_llm.py", line 303, in main
+    p_sql, _ = get_sql(schema2ids, sql)
+  File "E:\DB_Homework\DB-Science\CycleSQL-repro\src_repo\CycleSQL-main\spider_utils\process_sql.py", line 555, in get_sql
+    _, sql = parse_sql(toks, 0, tables_with_alias, schema)
+  File "E:\DB_Homework\DB-Science\CycleSQL-repro\src_repo\CycleSQL-main\spider_utils\process_sql.py", line 510, in parse_sql
+    _, select_col_units = parse_select(toks, idx, tables_with_alias, schema, default_tables)
+  File "E:\DB_Homework\DB-Science\CycleSQL-repro\src_repo\CycleSQL-main\spider_utils\process_sql.py", line 360, in parse_select
+    idx, val_unit = parse_val_unit(toks, idx, tables_with_alias, schema, default_tables)
+  File "E:\DB_Homework\DB-Science\CycleSQL-repro\src_repo\CycleSQL-main\spider_utils\process_sql.py", line 243, in parse_val_unit
+    idx, col_unit1 = parse_col_unit(toks, idx, tables_with_alias, schema, default_tables)
+  File "E:\DB_Homework\DB-Science\CycleSQL-repro\src_repo\CycleSQL-main\spider_utils\process_sql.py", line 222, in parse_col_unit
+    idx, col_id = parse_col(toks, idx, tables_with_alias, schema, default_tables)
+  File "E:\DB_Homework\DB-Science\CycleSQL-repro\src_repo\CycleSQL-main\spider_utils\process_sql.py", line 190, in parse_col
+    assert False, "Error col: {}".format(tok)
+AssertionError: Error col: tournament_name
+
+NL query: Find the highest rank of losers in all matches.
+Predicted SQL index: 1
+Predicted SQL: select max ( loser_rank ) from matches
+Predicted SQL Explanation:The query returns a result set with 1 column [max(matches.loser_rank)] and 1 row. The result, there are 278 matches, the maximum loser rank is 112.
+Result: max(matches.loser_rank): 112
+Gold SQL Index: 0
+Gold SQL: SELECT min(loser_rank) FROM matches
+Gold SQL Explanation: The query returns a result set with 1 column [max(matches.loser_rank)] and 1 row. The result, there are 278 matches, the maximum loser rank is 112.
+Result: max(matches.loser_rank): 112
+
+NL query: What is the best rank of losers across all matches?
+Predicted SQL index: 0
+Predicted SQL: select loser_rank from matches order by loser_rank desc limit 1
+Predicted SQL Explanation:The query returns a result set with 1 column [matches.loser_rank (int)] and 1 row, sorted in descending order of [loser rank ] with a limit 1 (the maximum ) returned. The result, matches, loser rank 112 that is the maximum loser rank.
+Result: matches.loser_rank: 112
+Gold SQL Index: 4
+Gold SQL: SELECT min(loser_rank) FROM matches
+Gold SQL Explanation: The query returns a result set with 1 column [matches.loser_rank (int)] and 1 row, sorted in descending order of [loser rank ] with a limit 1 (the maximum ) returned. The result, matches, loser rank 112 that is the maximum loser rank.
+Result: matches.loser_rank: 112
+
+NL query: Find the first name and country code of the oldest player.
+Predicted SQL index: 0
+Predicted SQL: select first_name, country_code from players order by birth_date desc limit 1
+Predicted SQL Explanation:The query returns a result set with 2 columns [players.first_name (str), players.country_code (str)] and 1 row, sorted in descending order of [birth date ] with a limit 1 (the maximum ) returned. The result, players, first name Dorothy, player id is 200130, birth date is  that is the maximum birth date.
+Result: players.first_name: Dorothy
+Gold SQL Index: 1
+Gold SQL: SELECT first_name ,  country_code FROM players ORDER BY birth_date LIMIT 1
+Gold SQL Explanation: The query returns a result set with 2 columns [players.first_name (str), players.country_code (str)] and 1 row, sorted in descending order of [birth date ] with a limit 1 (the maximum ) returned. The result, players, first name Dorothy, player id is 200130, birth date is  that is the maximum birth date.
+Result: players.first_name: Dorothy
+
+NL query: List the first and last name of all players who are left / L hand in the order of birth date.
+Predicted SQL index: 0
+Predicted SQL: select first_name, last_name from players where hand = 'left' order by birth_date asc
+Predicted SQL Explanation:The query returns a result set with 2 columns [players.first_name, players.last_name] and 0 row, filtered by [hand] equal to left, sorted in ascending order of [birth date ].
+Result: 
+Gold SQL Index: 1
+Gold SQL: SELECT first_name ,  last_name FROM players WHERE hand  =  'L' ORDER BY birth_date
+Gold SQL Explanation: The query returns a result set with 2 columns [players.first_name, players.last_name] and 0 row, filtered by [hand] equal to left, sorted in ascending order of [birth date ].
+Result: 
+
+NL query: What are the full names of all left handed players, in order of birth date?
+Predicted SQL index: 0
+Predicted SQL: select first_name, last_name from players where hand = 'left' order by birth_date asc
+Predicted SQL Explanation:The query returns a result set with 2 columns [players.first_name, players.last_name] and 0 row, filtered by [hand] equal to left, sorted in ascending order of [birth date ].
+Result: 
+Gold SQL Index: 3
+Gold SQL: SELECT first_name ,  last_name FROM players WHERE hand  =  'L' ORDER BY birth_date
+Gold SQL Explanation: The query returns a result set with 2 columns [players.first_name, players.last_name] and 0 row, filtered by [hand] equal to left, sorted in ascending order of [birth date ].
+Result: 
+{
+  "questions": 62,
+  "llm_calls": 78,
+  "llm_cache_hits": 0,
+  "llm_errors": 0,
+  "verifier_switched_off_beam1": 8,
+  "explanations_built": 78,
+  "swallowed_exceptions": 31,
+  "last_exception": "AssertionError: Error col: tournament_name",
+  "exception_kinds": {
+    "AssertionError: Error col: tournament_name": 19,
+    "KeyError: 'winners'": 2,
+    "KeyError: 'ranks'": 4,
+    "KeyError: 'ranking'": 2,
+    "KeyError: 'gamers'": 1,
+    "KeyError: 'rankings.winner_id'": 1,
+    "KeyError: 'wins'": 1,
+    "AssertionError: Error col: winner_hand": 1
+  },
+  "preds": "E:/DB_Homework/DB-Science/CycleSQL-repro/outputs/spider/resdsql/preds.txt",
+  "baseline_top1": "E:/DB_Homework/DB-Science/CycleSQL-repro/outputs/spider/resdsql\\preds_baseline_top1.txt"
+}

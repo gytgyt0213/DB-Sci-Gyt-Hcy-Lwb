@@ -1,0 +1,555 @@
+[
+    {
+        "db_id": "wta_1",
+        "question": "Find the total number of players.",
+        "query": "select count ( * ) from players",
+        "explanation": "The query returns a result set with 1 column [count(*)] and 1 row. The result, there are 20662 players, so the number of players is 20662.",
+        "result": "count(*): 20662"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "How many players are there?",
+        "query": "select count ( * ) from players",
+        "explanation": "The query returns a result set with 1 column [count(*)] and 1 row. The result, there are 20662 players, so the number of players is 20662.",
+        "result": "count(*): 20662"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the total number of matches.",
+        "query": "select count ( * ) from matches",
+        "explanation": "The query returns a result set with 1 column [count(*)] and 1 row. The result, matches, so the number of matches is 278.",
+        "result": "count(*): 278"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Count the number of matches.",
+        "query": "select count ( * ) from matches",
+        "explanation": "The query returns a result set with 1 column [count(*)] and 1 row. The result, matches, so the number of matches is 278.",
+        "result": "count(*): 278"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "List the first name and birth date of all players from the country with code USA.",
+        "query": "select first_name, birth_date from players where country_code = 'USA'",
+        "explanation": "The query returns a result set with 2 columns [players.first_name (str), players.birth_date (int)] and 2212 rows, filtered by [country code] equal to USA. Among them, the result, for example, players, birth date 19781224, country code is USA, player id is 202756.",
+        "result": "players.birth_date: 19781224"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the first names and birth dates of players from the USA?",
+        "query": "select first_name, birth_date from players where country_code = 'USA'",
+        "explanation": "The query returns a result set with 2 columns [players.first_name (str), players.birth_date (int)] and 2212 rows, filtered by [country code] equal to USA. Among them, the result, for example, players, birth date 19881118, country code is USA, player id is 220336.",
+        "result": "players.birth_date: 19881118"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the average age of losers and winners of all matches.",
+        "query": "select avg ( loser_age ), avg ( winner_age ) from matches",
+        "explanation": "The query returns a result set with 2 columns [avg(matches.loser_age), avg(matches.winner_age)] and 1 row. The result, there are 278 matches, the average winner age is 27.06.",
+        "result": "avg(matches.winner_age): 27.062177773183812"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the average ages of losers and winners across matches?",
+        "query": "select avg ( winner_age ), avg ( loser_age ) from matches",
+        "explanation": "The query returns a result set with 2 columns [avg(matches.winner_age), avg(matches.loser_age)] and 1 row. The result, there are 278 matches, the average loser age is 27.31.",
+        "result": "avg(matches.loser_age): 27.311213862584534"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the average rank of winners in all matches.",
+        "query": "select avg ( winner_rank ) from matches",
+        "explanation": "The query returns a result set with 1 column [avg(matches.winner_rank)] and 1 row. The result, there are 278 matches, the average winner rank is 13.72.",
+        "result": "avg(matches.winner_rank): 13.715827338129497"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What is the average rank for winners in all matches?",
+        "query": "select avg ( winner_rank ) from matches",
+        "explanation": "The query returns a result set with 1 column [avg(matches.winner_rank)] and 1 row. The result, there are 278 matches, the average winner rank is 13.72.",
+        "result": "avg(matches.winner_rank): 13.715827338129497"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the highest rank of losers in all matches.",
+        "query": "select min ( loser_rank ) from matches",
+        "explanation": "The query returns a result set with 1 column [min(matches.loser_rank)] and 1 row. The result, there are 278 matches, the minimum loser rank is 1.",
+        "result": "min(matches.loser_rank): 1"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the highest rank of losers in all matches.",
+        "query": "select max ( loser_rank ) from matches",
+        "explanation": "The query returns a result set with 1 column [max(matches.loser_rank)] and 1 row. The result, there are 278 matches, the maximum loser rank is 112.",
+        "result": "max(matches.loser_rank): 112"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What is the best rank of losers across all matches?",
+        "query": "select loser_rank from matches order by loser_rank desc limit 1",
+        "explanation": "The query returns a result set with 1 column [matches.loser_rank (int)] and 1 row, sorted in descending order of [loser rank ] with a limit 1 (the maximum ) returned. The result, matches, loser rank 112 that is the maximum loser rank.",
+        "result": "matches.loser_rank: 112"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "find the number of distinct country codes of all players.",
+        "query": "select count ( distinct country_code ) from players",
+        "explanation": "The query returns a result set with 1 column [count(players.country_code)] and 1 row. The result, there are 20662 players, the number of country code is 153.",
+        "result": "count(players.country_code): 153"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "How many distinct countries do players come from?",
+        "query": "select count ( distinct country_code ) from players",
+        "explanation": "The query returns a result set with 1 column [count(players.country_code)] and 1 row. The result, there are 20662 players, the number of country code is 153.",
+        "result": "count(players.country_code): 153"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the number of distinct name of losers.",
+        "query": "select count ( distinct loser_name ) from matches",
+        "explanation": "The query returns a result set with 1 column [count(matches.loser_name)] and 1 row. The result, there are 278 matches, the number of loser name is 49.",
+        "result": "count(matches.loser_name): 49"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "How many different loser names are there?",
+        "query": "select count ( distinct loser_name ) from matches",
+        "explanation": "The query returns a result set with 1 column [count(matches.loser_name)] and 1 row. The result, there are 278 matches, the number of loser name is 49.",
+        "result": "count(matches.loser_name): 49"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the name of tourney that has more than 10 matches.",
+        "query": "select tourney_name from matches group by tourney_name having count ( * ) > 10",
+        "explanation": "The query returns a result set with 1 column [matches.tourney_name (str)] and 9 rows, filtered by matches greater than 10.0. Among them, the result, for example, for tourney name Wimbledon, that matches greater than 10.0.",
+        "result": "matches.tourney_name: Wimbledon"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the names of tournaments that have more than 10 matches?",
+        "query": "select tourney_name from matches group by tourney_name having count ( * ) > 10",
+        "explanation": "The query returns a result set with 1 column [matches.tourney_name (str)] and 9 rows, filtered by matches greater than 10.0. Among them, the result, for example, for tourney name Wimbledon, that matches greater than 10.0.",
+        "result": "matches.tourney_name: Wimbledon"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "List the names of all winners who played in both 2013 and 2016.",
+        "query": "select winner_name from matches where year = 2013 intersect select winner_name from matches where year = 2016",
+        "explanation": "The query returns a result set with 1 column [matches.winner_name (str)] and 5 rows, filtered by [year] equal to 2013.0 or [year] equal to 2016.0. Among them, the result, for example, matches, winner name Victoria Azarenka, year is 2013, and there are 6 matches, year is 2016.",
+        "result": "matches.winner_name: Victoria Azarenka"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the names of players who won in both 2013 and 2016?",
+        "query": "select players.first_name, players.last_name from players join matches on players.player_id = matches.winner_id where matches.year = 2013 intersect select players.first_name, players.last_name from players join matches on players.player_id = matches.winner_id where matches.year = 2016",
+        "explanation": "The query returns a result set with 2 columns [players.first_name (str), players.last_name (str)] and 5 rows, filtered by [year] equal to 2013.0 or [year] equal to 2016.0. Among them, the result, for example, last name Kerber, year is 2013, player id is 201493, and there are 20 players with matches, year is 2016, player id is 201493.",
+        "result": "players.last_name: Kerber"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the names of players who won in both 2013 and 2016?",
+        "query": "select players.first_name, players.last_name from matches join players on matches.winner_id = players.player_id where matches.year = 2013 intersect select players.first_name, players.last_name from matches join players on matches.winner_id = players.player_id where matches.year = 2016",
+        "explanation": "The query returns a result set with 2 columns [players.first_name (str), players.last_name (str)] and 5 rows, filtered by [year] equal to 2013.0 or [year] equal to 2016.0. Among them, the result, for example, last name Azarenka, year is 2013, player id is 201458, and there are 6 players with matches, year is 2016, player id is 201458.",
+        "result": "players.last_name: Azarenka"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the names of players who won in both 2013 and 2016?",
+        "query": "select players.first_name, players.last_name from matches join players on matches.winner_id = players.player_id where matches.year = 2013 intersect select players.first_name, players.last_name from players join matches on players.player_id = matches.winner_id where matches.year = 2016",
+        "explanation": "The query returns a result set with 2 columns [players.first_name (str), players.last_name (str)] and 5 rows, filtered by [year] equal to 2013.0 or [year] equal to 2016.0. Among them, the result, for example, first name Angelique, year is 2013, player id is 201493, and there are 20 players with matches, year is 2016, player id is 201493.",
+        "result": "players.first_name: Angelique"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "List the number of all matches who played in years of 2013 or 2016.",
+        "query": "select count ( * ) from matches where year = 2013 or year = 2016",
+        "explanation": "The query returns a result set with 1 column [count(*)] and 1 row, filtered by [year] equal to 2013.0 or [year] equal to 2016.0. The result, year 2016, 2013, there are 170 matches, so the number of matches is 170.",
+        "result": "count(*): 170"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "How many matches were played in 2013 or 2016?",
+        "query": "select count ( * ) from matches where year = 2013 or year = 2016",
+        "explanation": "The query returns a result set with 1 column [count(*)] and 1 row, filtered by [year] equal to 2013.0 or [year] equal to 2016.0. The result, year 2016, 2013, there are 170 matches, so the number of matches is 170.",
+        "result": "count(*): 170"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the country code and first name of the players who won in both tourney WTA Championships and Australian Open?",
+        "query": "select players.country_code, players.first_name from players join matches on players.player_id = matches.winner_id where matches.tourney_name = 'WTA Championships' intersect select players.country_code, players.first_name from players join matches on players.player_id = matches.winner_id where matches.tourney_name = 'Australian Open'",
+        "explanation": "The query returns a result set with 2 columns [players.country_code (str), players.first_name (str)] and 2 rows, filtered by [tourney name] equal to WTA Championships or [tourney name] equal to Australian Open. Among them, the result, for example, first name Angelique, player id is 201493, tourney name is WTA Championships, and there are 2 players with matches, player id is 201493, tourney name is Australian Open.",
+        "result": "players.first_name: Angelique"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the country code and first name of the players who won in both tourney WTA Championships and Australian Open?",
+        "query": "select players.country_code, players.first_name from matches join players on matches.winner_id = players.player_id where matches.tourney_name = 'WTA Championships' intersect select players.country_code, players.first_name from matches join players on matches.winner_id = players.player_id where matches.tourney_name = 'Australian Open'",
+        "explanation": "The query returns a result set with 2 columns [players.country_code (str), players.first_name (str)] and 2 rows, filtered by [tourney name] equal to WTA Championships or [tourney name] equal to Australian Open. Among them, the result, for example, first name Serena, there are 3 players with matches, player id is 200033, tourney name is WTA Championships, and there are 3 players with matches, player id is 200033, tourney name is Australian Open.",
+        "result": "players.first_name: Serena"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the country code and first name of the players who won in both tourney WTA Championships and Australian Open?",
+        "query": "select players.country_code, players.first_name from matches join players on matches.winner_id = players.player_id where matches.tourney_name = 'WTA Championships' intersect select players.country_code, players.first_name from players join rankings on players.player_id = rankings.player_id join matches on matches.winner_id = players.player_id where matches.tourney_name = 'Australian Open'",
+        "explanation": "The query returns a result set with 2 columns [players.country_code (str), players.first_name (str)] and 2 rows, filtered by [tourney name] equal to WTA Championships or [tourney name] equal to Australian Open. Among them, the result, for example, country code GER, player id is 201493, tourney name is WTA Championships, and there are 1270 players, player id is 201493, tourney name is Australian Open.",
+        "result": "players.country_code: GER"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the country code and first name of the players who won in both tourney WTA Championships and Australian Open?",
+        "query": "select players.country_code, players.first_name from matches join players on matches.winner_id = players.player_id where matches.tourney_name = 'WTA Championships' intersect select players.country_code, players.first_name from players join matches on players.player_id = matches.winner_id where matches.tourney_name = 'Australian Open'",
+        "explanation": "The query returns a result set with 2 columns [players.country_code (str), players.first_name (str)] and 2 rows, filtered by [tourney name] equal to WTA Championships or [tourney name] equal to Australian Open. Among them, the result, for example, country code USA, there are 3 players with matches, player id is 200033, tourney name is WTA Championships, and there are 5 players with matches, tourney name is Australian Open, player id is 200033, 201619, 200748.",
+        "result": "players.country_code: USA"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the country code and first name of the players who won in both tourney WTA Championships and Australian Open?",
+        "query": "select players.country_code, players.first_name from players join matches on players.player_id = matches.winner_id where matches.tourney_name = 'WTA Championships' intersect select players.country_code, players.first_name from players join matches on players.player_id = matches.winner_id where matches.tourney_name = 'Australia Open'",
+        "explanation": "The query returns a result set with 2 columns [players.country_code, players.first_name] and 0 row, filtered by [tourney name] equal to WTA Championships or [tourney name] equal to Australia Open.",
+        "result": ""
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the country code and first name of the players who won in both tourney WTA Championships and Australian Open?",
+        "query": "select players.country_code, players.first_name from players join matches on players.player_id = matches.winner_id where matches.tourney_name = 'World Tennis Association Championships' intersect select players.country_code, players.first_name from players join matches on players.player_id = matches.winner_id where matches.tourney_name = 'Australian Open'",
+        "explanation": "The query returns a result set with 2 columns [players.country_code, players.first_name] and 0 row, filtered by [tourney name] equal to World Tennis Association Championships or [tourney name] equal to Australian Open.",
+        "result": ""
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the country code and first name of the players who won in both tourney WTA Championships and Australian Open?",
+        "query": "select players.country_code, players.first_name from players join matches on players.player_id = matches.winner_id where matches.tourney_name = 'WTA Championships' intersect select players.country_code, players.first_name from players join matches on players.player_id = matches.winner_id where matches.tourney_name = 'Austral Open'",
+        "explanation": "The query returns a result set with 2 columns [players.country_code, players.first_name] and 0 row, filtered by [tourney name] equal to WTA Championships or [tourney name] equal to Austral Open.",
+        "result": ""
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the first names and country codes for players who won both the WTA Championships and the Australian Open?",
+        "query": "select players.first_name, players.country_code from players join matches on players.player_id = matches.winner_id where matches.tourney_name = 'WTA Championships' intersect select players.first_name, players.country_code from players join matches on players.player_id = matches.winner_id where matches.tourney_name = 'Australian Open'",
+        "explanation": "The query returns a result set with 2 columns [players.first_name (str), players.country_code (str)] and 2 rows, filtered by [tourney name] equal to WTA Championships or [tourney name] equal to Australian Open. Among them, the result, for example, country code GER, player id is 201493, tourney name is WTA Championships, and there are 2 players with matches, player id is 201493, tourney name is Australian Open.",
+        "result": "players.country_code: GER"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the first names and country codes for players who won both the WTA Championships and the Australian Open?",
+        "query": "select players.first_name, players.country_code from players join matches on players.player_id = matches.winner_id where matches.tourney_name = 'WTA Championships' intersect select players.first_name, players.country_code from players join rankings on players.player_id = rankings.player_id join matches on matches.winner_id = matches.winner_id where matches.tourney_name = 'Australian Open'",
+        "explanation": "The query returns a result set with 2 columns [players.first_name (str), players.country_code (str)] and 7 rows, filtered by [tourney name] equal to WTA Championships or [tourney name] equal to Australian Open. Among them, the result, for example, country code GER, player id is 201493, tourney name is WTA Championships, and there are 243360 players, tourney name is Australian Open.",
+        "result": "players.country_code: GER"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the first names and country codes for players who won both the WTA Championships and the Australian Open?",
+        "query": "select players.first_name, players.country_code from matches join players on matches.winner_id = players.player_id where matches.tourney_name = 'WTA Championships' intersect select players.first_name, players.country_code from matches join players on matches.winner_id = players.player_id where matches.tourney_name = 'Australian Open'",
+        "explanation": "The query returns a result set with 2 columns [players.first_name (str), players.country_code (str)] and 2 rows, filtered by [tourney name] equal to WTA Championships or [tourney name] equal to Australian Open. Among them, the result, for example, country code GER, player id is 201493, tourney name is WTA Championships, and there are 2 players with matches, player id is 201493, tourney name is Australian Open.",
+        "result": "players.country_code: GER"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the first names and country codes for players who won both the WTA Championships and the Australian Open?",
+        "query": "select players.first_name, players.country_code from players join matches on players.player_id = matches.winner_id where matches.tourney_name = 'WTA Championships' intersect select players.first_name, players.country_code from players join matches on players.player_id = matches.winner_id where matches.tourney_name = 'Australia Open'",
+        "explanation": "The query returns a result set with 2 columns [players.first_name, players.country_code] and 0 row, filtered by [tourney name] equal to WTA Championships or [tourney name] equal to Australia Open.",
+        "result": ""
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the first names and country codes for players who won both the WTA Championships and the Australian Open?",
+        "query": "select players.first_name, players.country_code from players join matches on players.player_id = matches.winner_id where matches.tourney_name = 'WTA Championships' intersect select players.first_name, players.country_code from matches join players on matches.winner_id = players.player_id where matches.tourney_name = 'Australian Open'",
+        "explanation": "The query returns a result set with 2 columns [players.first_name (str), players.country_code (str)] and 2 rows, filtered by [tourney name] equal to WTA Championships or [tourney name] equal to Australian Open. Among them, the result, for example, first name Angelique, player id is 201493, tourney name is WTA Championships, and there are 2 players with matches, player id is 201493, tourney name is Australian Open.",
+        "result": "players.first_name: Angelique"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the first name and country code of the oldest player.",
+        "query": "select first_name, country_code from players order by birth_date desc limit 1",
+        "explanation": "The query returns a result set with 2 columns [players.first_name (str), players.country_code (str)] and 1 row, sorted in descending order of [birth date ] with a limit 1 (the maximum ) returned. The result, players, first name Dorothy, player id is 200130, birth date is  that is the maximum birth date.",
+        "result": "players.first_name: Dorothy"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What is the first name and country code of the oldest player?",
+        "query": "select first_name, country_code from players order by birth_date desc limit 1",
+        "explanation": "The query returns a result set with 2 columns [players.first_name (str), players.country_code (str)] and 1 row, sorted in descending order of [birth date ] with a limit 1 (the maximum ) returned. The result, players, first name Dorothy, player id is 200130, birth date is  that is the maximum birth date.",
+        "result": "players.first_name: Dorothy"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "List the first and last name of all players in the order of birth date.",
+        "query": "select first_name, last_name from players order by birth_date asc",
+        "explanation": "The query returns a result set with 2 columns [players.first_name (str), players.last_name (str)] and 20662 rows, sorted in ascending order of [birth date ]. Among them, the result, for example, first name Arantxa, there are 6 players.",
+        "result": "players.first_name: Arantxa"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the full names of all players, sorted by birth date?",
+        "query": "select first_name, last_name from players order by birth_date asc",
+        "explanation": "The query returns a result set with 2 columns [players.first_name (str), players.last_name (str)] and 20662 rows, sorted in ascending order of [birth date ]. Among them, the result, for example, first name Emma, there are 33 players.",
+        "result": "players.first_name: Emma"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "List the first and last name of all players who are left / L hand in the order of birth date.",
+        "query": "select first_name, last_name from players where hand = 'left' order by birth_date asc",
+        "explanation": "The query returns a result set with 2 columns [players.first_name, players.last_name] and 0 row, filtered by [hand] equal to left, sorted in ascending order of [birth date ].",
+        "result": ""
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the full names of all left handed players, in order of birth date?",
+        "query": "select first_name, last_name from players where hand = 'left' order by birth_date asc",
+        "explanation": "The query returns a result set with 2 columns [players.first_name, players.last_name] and 0 row, filtered by [hand] equal to left, sorted in ascending order of [birth date ].",
+        "result": ""
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the first name and country code of the player who did the most number of tours.",
+        "query": "select players.first_name, players.country_code from players join rankings on players.player_id = rankings.player_id group by rankings.player_id order by count ( * ) desc limit 1",
+        "explanation": "The query returns a result set with 2 columns [players.first_name (str), players.country_code (str)] and 1 row, sorted in descending order of the number of rankings with a limit 1 (the maximum ) returned. The result, country code THA, there are 5244 rankingsthat is the maximum the number of rankings.",
+        "result": "players.country_code: THA"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the first name and country code of the player who did the most number of tours.",
+        "query": "select players.first_name, players.country_code from rankings join players on rankings.player_id = players.player_id group by rankings.player_id order by count ( * ) desc limit 1",
+        "explanation": "The query returns a result set with 2 columns [players.first_name (str), players.country_code (str)] and 1 row, sorted in descending order of the number of rankings with a limit 1 (the maximum ) returned. The result, country code THA, there are 5244 rankingsthat is the maximum the number of rankings.",
+        "result": "players.country_code: THA"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What is the first name and country code of the player with the most tours?",
+        "query": "select players.first_name, players.country_code from players join rankings on players.player_id = rankings.player_id group by rankings.player_id order by count ( * ) desc limit 1",
+        "explanation": "The query returns a result set with 2 columns [players.first_name (str), players.country_code (str)] and 1 row, sorted in descending order of the number of rankings with a limit 1 (the maximum ) returned. The result, for first name Tamarine, there are 1117 rankingsthat is the maximum the number of rankings, player id is 200009, player id is 200009.",
+        "result": "players.first_name: Tamarine"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What is the first name and country code of the player with the most tours?",
+        "query": "select players.first_name, players.country_code from rankings join players on rankings.player_id = players.player_id group by rankings.player_id order by count ( * ) desc limit 1",
+        "explanation": "The query returns a result set with 2 columns [players.first_name (str), players.country_code (str)] and 1 row, sorted in descending order of the number of rankings with a limit 1 (the maximum ) returned. The result, for country code THA, there are 5244 rankingsthat is the maximum the number of rankings.",
+        "result": "players.country_code: THA"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the year that has the most number of matches.",
+        "query": "select year from matches group by year order by count ( * ) desc limit 1",
+        "explanation": "The query returns a result set with 1 column [matches.year (int)] and 1 row, sorted in descending order of the number of matches with a limit 1 (the maximum ) returned. The result, for year 2016, there are 158 matchesthat is the maximum the number of matches.",
+        "result": "matches.year: 2016"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Which year had the most matches?",
+        "query": "select year from matches group by year order by count ( * ) desc limit 1",
+        "explanation": "The query returns a result set with 1 column [matches.year (int)] and 1 row, sorted in descending order of the number of matches with a limit 1 (the maximum ) returned. The result, for year 2016, there are 158 matchesthat is the maximum the number of matches.",
+        "result": "matches.year: 2016"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the name and rank points of the winner who won the most times.",
+        "query": "select winner_name, winner_rank_points from matches group by winner_name order by count ( * ) desc limit 1",
+        "explanation": "The query returns a result set with 2 columns [matches.winner_name (str), matches.winner_rank_points (int)] and 1 row, sorted in descending order of the number of matches with a limit 1 (the maximum ) returned. The result, for winner name Angelique Kerber, there are 22 matchesthat is the maximum the number of matches.",
+        "result": "matches.winner_name: Angelique Kerber"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What is the name of the winner who has won the most matches, and how many rank points does this player have?",
+        "query": "select winner_name, winner_rank_points from matches group by winner_name order by count ( * ) desc limit 1",
+        "explanation": "The query returns a result set with 2 columns [matches.winner_name (str), matches.winner_rank_points (int)] and 1 row, sorted in descending order of the number of matches with a limit 1 (the maximum ) returned. The result, for winner name Angelique Kerber, there are 22 matchesthat is the maximum the number of matches.",
+        "result": "matches.winner_name: Angelique Kerber"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the name of the winner who has the highest rank points and participated in the Australian Open tourney.",
+        "query": "select winner_name from rankings join matches on rankings.ranking_points = matches.winner_id where matches.tourney_name = 'Australian Open' order by rankings.ranking_points desc limit 1",
+        "explanation": "The query returns a result set with 1 column [matches.winner_name] and 0 row, filtered by [tourney name] equal to Australian Open, sorted in descending order of [ranking points ] with a limit 1 (the maximum ) returned.",
+        "result": ""
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the name of the winner who has the highest rank points and participated in the Australian Open tourney.",
+        "query": "select winner_name from matches join rankings on matches.winner_id = rankings.player_id where matches.tourney_name = 'Australian Open' order by rankings.ranking_points desc limit 1",
+        "explanation": "The query returns a result set with 1 column [matches.winner_name (str)] and 1 row, filtered by [tourney name] equal to Australian Open, sorted in descending order of [ranking points ] with a limit 1 (the maximum ) returned. The result, winner name Serena Williams, tourney name is Australian Open, ranking points is 13615 that is the maximum ranking points.",
+        "result": "matches.winner_name: Serena Williams"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What is the name of the winner with the most rank points who participated in the Australian Open tournament?",
+        "query": "select winner_name from matches where tourney_name = 'Australian Open' order by winner_rank_points desc limit 1",
+        "explanation": "The query returns a result set with 1 column [matches.winner_name (str)] and 1 row, filtered by [tourney name] equal to Australian Open, sorted in descending order of [winner rank points ] with a limit 1 (the maximum ) returned. The result, matches, winner name Serena Williams, tourney name is Australian Open, winner rank points is 9945 that is the maximum winner rank points.",
+        "result": "matches.winner_name: Serena Williams"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "find the names of loser and winner who played in the match with greatest number of minutes.",
+        "query": "select loser_name, winner_name from matches order by minutes desc limit 1",
+        "explanation": "The query returns a result set with 2 columns [matches.loser_name (str), matches.winner_name (str)] and 1 row, sorted in descending order of [minutes ] with a limit 1 (the maximum ) returned. The result, matches, winner name Petra Kvitova, minutes is 199 that is the maximum minutes.",
+        "result": "matches.winner_name: Petra Kvitova"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the names of the winner and loser who played in the longest match?",
+        "query": "select winner_name, loser_name from matches order by minutes desc limit 1",
+        "explanation": "The query returns a result set with 2 columns [matches.winner_name (str), matches.loser_name (str)] and 1 row, sorted in descending order of [minutes ] with a limit 1 (the maximum ) returned. The result, matches, winner name Petra Kvitova, minutes is 199 that is the maximum minutes.",
+        "result": "matches.winner_name: Petra Kvitova"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the average ranking for each player and their first name.",
+        "query": "select avg ( rankings.ranking ), players.first_name from rankings join players on rankings.player_id = players.player_id group by players.first_name",
+        "explanation": "The query returns a result set with 2 columns [avg(rankings.ranking), players.first_name (str)] and 1580 rows. Among them, the result, for example, for first name Olivia, there are 578 rankings, player id is 215432, 211881, 201542, the average ranking is 446.72.",
+        "result": "avg(rankings.ranking): 446.7231833910035, players.first_name: Olivia"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the average ranking for each player and their first name.",
+        "query": "select avg ( rankings.ranking ), players.first_name from players join rankings on players.player_id = rankings.player_id group by players.player_id",
+        "explanation": "The query returns a result set with 2 columns [avg(rankings.ranking), players.first_name (str)] and 2775 rows. Among them, the result, for example, for first name Lisa, there are 1996 rankings, the average ranking is 459.59.",
+        "result": "avg(rankings.ranking): 459.5925925925926, players.first_name: Lisa"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the first names of all players, and their average rankings?",
+        "query": "select players.first_name, avg ( rankings.ranking ) from rankings join players on rankings.player_id = players.player_id group by players.first_name",
+        "explanation": "The query returns a result set with 2 columns [players.first_name (str), avg(rankings.ranking)] and 1580 rows. Among them, the result, for example, for first name Gebriela, there are 28 rankings, player id is 211931, the average ranking is 1152.14.",
+        "result": "avg(rankings.ranking): 1152.142857142857, players.first_name: Gebriela"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the total ranking points for each player and their first name.",
+        "query": "select sum ( ranking_points ), players.first_name from rankings join players on rankings.player_id = players.player_id group by players.first_name",
+        "explanation": "The query returns a result set with 2 columns [sum(rankings.ranking_points), players.first_name (str)] and 1580 rows. Among them, the result, for example, for first name Zaineb, there are 29 rankings, player id is 213633, ranking points is 3 the sumary ranking points is 87.",
+        "result": "sum(rankings.ranking_points): 87, players.first_name: Zaineb"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the first names of all players, and their total ranking points?",
+        "query": "select players.first_name, sum ( rankings.ranking_points ) from rankings join players on rankings.player_id = players.player_id group by players.first_name",
+        "explanation": "The query returns a result set with 2 columns [players.first_name (str), sum(rankings.ranking_points)] and 1580 rows. Among them, the result, for example, for first name Mia Nicole, there are 105 rankings, player id is 211288, the sumary ranking points is 1098.",
+        "result": "sum(rankings.ranking_points): 1098, players.first_name: Mia Nicole"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "find the number of players for each country.",
+        "query": "select country_code, count ( * ) from players group by country_code",
+        "explanation": "The query returns a result set with 2 columns [players.country_code (str), count(*)] and 153 rows. Among them, the result, for example, for country code MLT, there are 17 players, so the number of players is 17.",
+        "result": "count(*): 17, players.country_code: MLT"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "How many players are from each country?",
+        "query": "select country_code, count ( * ) from players group by country_code",
+        "explanation": "The query returns a result set with 2 columns [players.country_code (str), count(*)] and 153 rows. Among them, the result, for example, for country code KEN, there are 23 players, so the number of players is 23.",
+        "result": "count(*): 23, players.country_code: KEN"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "find the code of the country where has the greatest number of players.",
+        "query": "select country_code from players group by country_code order by count ( * ) desc limit 1",
+        "explanation": "The query returns a result set with 1 column [players.country_code (str)] and 1 row, sorted in descending order of the number of players with a limit 1 (the maximum ) returned. The result, for country code USA, there are 2217 playersthat is the maximum the number of players.",
+        "result": "players.country_code: USA"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What is the code of the country with the most players?",
+        "query": "select country_code from players group by country_code order by count ( * ) desc limit 1",
+        "explanation": "The query returns a result set with 1 column [players.country_code (str)] and 1 row, sorted in descending order of the number of players with a limit 1 (the maximum ) returned. The result, for country code USA, there are 2217 playersthat is the maximum the number of players.",
+        "result": "players.country_code: USA"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the codes of countries that have more than 50 players.",
+        "query": "select country_code from players group by country_code having count ( * ) > 50",
+        "explanation": "The query returns a result set with 1 column [players.country_code (str)] and 65 rows, filtered by players greater than 50.0. Among them, the result, for example, for country code ALG, that players greater than 50.0, player id is 202298.",
+        "result": "players.country_code: ALG"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the codes of countries with more than 50 players?",
+        "query": "select country_code from players group by country_code having count ( * ) > 50",
+        "explanation": "The query returns a result set with 1 column [players.country_code (str)] and 65 rows, filtered by players greater than 50.0. Among them, the result, for example, for country code FIN, that players greater than 50.0, player id is 200623.",
+        "result": "players.country_code: FIN"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the total number of tours for each ranking date.",
+        "query": "select ranking_date, sum ( tours ) from rankings group by ranking_date",
+        "explanation": "The query returns a result set with 2 columns [rankings.ranking_date (int), sum(rankings.tours)] and 1504 rows. Among them, the result, for example, for ranking date 20111010, there are 1097 rankings, the sumary tours is 13382.",
+        "result": "sum(rankings.tours): 13382, rankings.ranking_date: 20111010"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "How many total tours were there for each ranking date?",
+        "query": "select ranking_date, sum ( tours ) from rankings group by ranking_date",
+        "explanation": "The query returns a result set with 2 columns [rankings.ranking_date (int), sum(rankings.tours)] and 1504 rows. Among them, the result, for example, for ranking date 20040614, there are 241 rankings, the sumary tours is 3456.",
+        "result": "sum(rankings.tours): 3456, rankings.ranking_date: 20040614"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the number of matches happened in each year.",
+        "query": "select count ( * ), year from matches group by year",
+        "explanation": "The query returns a result set with 2 columns [count(*), matches.year (int)] and 3 rows. Among them, the result, for example, for year 2016, there are 158 matches, so the number of matches is 158.",
+        "result": "count(*): 158, matches.year: 2016"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "How many matches were played in each year?",
+        "query": "select year, count ( * ) from matches group by year",
+        "explanation": "The query returns a result set with 2 columns [matches.year (int), count(*)] and 3 rows. Among them, the result, for example, for year 2017, there are 108 matches, so the number of matches is 108.",
+        "result": "count(*): 108, matches.year: 2017"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the name and rank of the 3 youngest winners across all matches.",
+        "query": "select winner_name, winner_rank from matches order by winner_age asc limit 3",
+        "explanation": "The query returns a result set with 2 columns [matches.winner_name (str), matches.winner_rank (int)] and 3 rows, sorted in ascending order of [winner age ] with a limit 3 (the lowest 3) returned. Among them, the result, for example, winner name Madison Keys, there are 3 matches, winner age is 21.3196440794, 20.917180013699998, 21.0896646133 that is the lowest 3 winner age.",
+        "result": "matches.winner_name: Madison Keys"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What are the names and ranks of the three youngest winners across all matches?",
+        "query": "select winner_name, winner_rank from matches order by winner_age asc limit 3",
+        "explanation": "The query returns a result set with 2 columns [matches.winner_name (str), matches.winner_rank (int)] and 3 rows, sorted in ascending order of [winner age ] with a limit 3 (the lowest 3) returned. Among them, the result, for example, winner name Madison Keys, there are 3 matches, winner age is 21.3196440794, 20.917180013699998, 21.0896646133 that is the lowest 3 winner age.",
+        "result": "matches.winner_name: Madison Keys"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the number of left handed winners who participated in the WTA Championships.",
+        "query": "select count ( * ) from matches where tourney_name = 'WTA Championships' and winner_hand = 'left'",
+        "explanation": "The query returns a result set with 1 column [count(*)] and 0 row, filtered by [tourney name] equal to WTA Championships and [winner hand] equal to left. The result, winner hand equal to left, tourney name equal to WTA Championships, has no has no matches, so the number of matches is 0.",
+        "result": "count(*): 0"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the first name, country code and birth date of the winner who has the highest rank points in all matches.",
+        "query": "select players.first_name, players.country_code, players.birth_date from players join matches on players.player_id = matches.winner_id order by matches.winner_rank_points desc limit 1",
+        "explanation": "The query returns a result set with 3 columns [players.first_name (str), players.country_code (str), players.birth_date (int)] and 1 row, sorted in descending order of [winner rank points ] with a limit 1 (the maximum ) returned. The result, first name Serena, player id is 200033, winner rank points is 12040 that is the maximum winner rank points.",
+        "result": "players.first_name: Serena"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What is the first name, country code, and birth date of the player with the most winner rank points across all matches?",
+        "query": "select players.first_name, players.country_code, players.birth_date from players join matches on players.player_id = matches.winner_id group by matches.winner_id order by sum ( matches.winner_rank_points ) desc limit 1",
+        "explanation": "The query returns a result set with 3 columns [players.first_name (str), players.country_code (str), players.birth_date (int)] and 1 row, sorted in descending order of the sumary [winner rank points ] with a limit 1 (the maximum ) returned. The result, country code USA, there are 45 matches, that is the maximum the sumary winner rank points.",
+        "result": "players.country_code: USA"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "What is the first name, country code, and birth date of the player with the most winner rank points across all matches?",
+        "query": "select players.first_name, players.country_code, players.birth_date from players join matches on players.player_id = matches.winner_id group by players.player_id order by sum ( matches.winner_rank_points ) desc limit 1",
+        "explanation": "The query returns a result set with 3 columns [players.first_name (str), players.country_code (str), players.birth_date (int)] and 1 row, sorted in descending order of the sumary [winner rank points ] with a limit 1 (the maximum ) returned. The result, for country code USA, there are 45 matches, that is the maximum the sumary winner rank points.",
+        "result": "players.country_code: USA"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "Find the number of players for each hand type.",
+        "query": "select hand, count ( * ) from players group by hand",
+        "explanation": "The query returns a result set with 2 columns [players.hand (str), count(*)] and 4 rows. Among them, the result, for example, for hand R, there are 5028 players, so the number of players is 5028.",
+        "result": "count(*): 5028, players.hand: R"
+    },
+    {
+        "db_id": "wta_1",
+        "question": "How many players are there for each hand type?",
+        "query": "select hand, count ( * ) from players group by hand",
+        "explanation": "The query returns a result set with 2 columns [players.hand (str), count(*)] and 4 rows. Among them, the result, for example, for hand U, there are 14193 players, so the number of players is 14193.",
+        "result": "count(*): 14193, players.hand: U"
+    }
+]

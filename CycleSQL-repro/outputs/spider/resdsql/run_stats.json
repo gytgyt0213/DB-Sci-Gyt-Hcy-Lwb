@@ -1,0 +1,24 @@
+{
+  "questions": 62,
+  "llm_calls": 33,
+  "llm_cache_hits": 46,
+  "llm_errors": 0,
+  "verifier_switched_off_beam1": 9,
+  "explanations_built": 79,
+  "swallowed_exceptions": 35,
+  "last_exception": "AssertionError: Error col: winster_rank_points",
+  "exception_kinds": {
+    "AssertionError: Error col: tournament_name": 19,
+    "KeyError: 'winners'": 2,
+    "KeyError: 'ranks'": 4,
+    "KeyError: 'ranking'": 3,
+    "KeyError: 'gamers'": 1,
+    "KeyError: 'rankings.winner_id'": 1,
+    "KeyError: 'wins'": 2,
+    "AssertionError: Error col: winner_hand": 1,
+    "KeyError: 'match'": 1,
+    "AssertionError: Error col: winster_rank_points": 1
+  },
+  "preds": "E:/DB_Homework/DB-Science/CycleSQL-repro/outputs/spider/resdsql/preds.txt",
+  "baseline_top1": "E:/DB_Homework/DB-Science/CycleSQL-repro/outputs/spider/resdsql\\preds_baseline_top1.txt"
+}

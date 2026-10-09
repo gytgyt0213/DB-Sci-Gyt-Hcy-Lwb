@@ -1,0 +1,62 @@
+select count ( * ) from players
+select count ( * ) from players
+select count ( * ) from matches
+select count ( * ) from matches
+select first_name, birth_date from players where country_code = 'USA'
+select first_name, birth_date from players where country_code = 'USA'
+select avg ( loser_age ), avg ( winner_age ) from matches
+select avg ( winner_age ), avg ( loser_age ) from matches
+select avg ( winner_rank ) from matches
+select avg ( winner_rank ) from matches
+select min ( loser_rank ) from matches
+select loser_rank from matches order by loser_rank desc limit 1
+select count ( distinct country_code ) from players
+select count ( distinct country_code ) from players
+select count ( distinct loser_name ) from matches
+select count ( distinct loser_name ) from matches
+select tournament_name from matches group by tournament_name having count ( * ) > 10
+select tournament_name from matches group by tournament_name having count ( * ) > 10
+select winner_name from matches where year = 2013 intersect select winner_name from matches where year = 2016
+select players.first_name, players.last_name from players join matches on players.player_id = matches.winner_id where matches.year = 2013 intersect select players.first_name, players.last_name from players join matches on players.player_id = matches.winner_id where matches.year = 2016
+select count ( * ) from matches where year = 2013 or year = 2016
+select count ( * ) from matches where year = 2013 or year = 2016
+select players.country_code, players.first_name from players join matches on players.player_id = matches.winner_id where matches.tourney_name = 'WTA Championships' intersect select players.country_code, players.first_name from players join matches on players.player_id = matches.winner_id where matches.tourney_name = 'Australian Open'
+select players.first_name, players.country_code from players join matches on players.player_id = matches.winner_id where matches.tourney_name = 'WTA Championships' intersect select players.first_name, players.country_code from players join matches on players.player_id = matches.winner_id where matches.tourney_name = 'Australian Open'
+select first_name, country_code from players order by birth_date desc limit 1
+select first_name, country_code from players order by birth_date desc limit 1
+select first_name, last_name from players order by birth_date asc
+select first_name, last_name from players order by birth_date asc
+select first_name, last_name from players where hand = 'left' order by birth_date asc
+select first_name, last_name from players where hand = 'left' order by birth_date asc
+select players.first_name, players.country_code from players join rankings on players.player_id = rankings.player_id group by rankings.player_id order by count ( * ) desc limit 1
+select players.first_name, players.country_code from players join rankings on players.player_id = rankings.player_id group by rankings.player_id order by count ( * ) desc limit 1
+select year from matches group by year order by count ( * ) desc limit 1
+select year from matches group by year order by count ( * ) desc limit 1
+select winner_name, winner_rank_points from matches group by winner_name order by count ( * ) desc limit 1
+select winner_name, winner_rank_points from matches group by winner_name order by count ( * ) desc limit 1
+select winner_name from matches where tournament_name = 'Australian Open' order by winner_rank_points desc limit 1
+select winner_name from matches where tournament_name = 'Australian Open' order by winner_rank_points desc limit 1
+select loser_name, winner_name from matches order by minutes desc limit 1
+select winner_name, loser_name from matches order by minutes desc limit 1
+select avg ( rankings.ranking ), players.first_name from rankings join players on rankings.player_id = players.player_id group by players.first_name
+select players.first_name, avg ( rankings.ranking ) from rankings join players on rankings.player_id = players.player_id group by players.first_name
+select sum ( ranking_points ), players.first_name from rankings join players on rankings.player_id = players.player_id group by players.first_name
+select players.first_name, sum ( rankings.ranking_points ) from rankings join players on rankings.player_id = players.player_id group by players.first_name
+select country_code, count ( * ) from players group by country_code
+select country_code, count ( * ) from players group by country_code
+select country_code from players group by country_code order by count ( * ) desc limit 1
+select country_code from players group by country_code order by count ( * ) desc limit 1
+select country_code from players group by country_code having count ( * ) > 50
+select country_code from players group by country_code having count ( * ) > 50
+select ranking_date, sum ( tours ) from rankings group by ranking_date
+select ranking_date, sum ( tours ) from rankings group by ranking_date
+select count ( * ), year from matches group by year
+select year, count ( * ) from matches group by year
+select winner_name, winner_rank from matches order by winner_age asc limit 3
+select winner_name, winner_rank from matches order by winner_age asc limit 3
+select count ( distinct winner_hand ) from matches where tournament_name = 'WTA Championships' and hand = 'left'
+select count ( * ) from matches where tournament_name = 'WTA Championships' and winner_hand = 'left'
+select players.first_name, players.country_code, players.birth_date from players join matches on players.player_id = matches.winner_id order by matches.winner_rank_points desc limit 1
+select players.first_name, players.country_code, players.birth_date from players join matches on players.player_id = matches.winner_id group by matches.winner_id order by sum ( matches.winner_rank_points ) desc limit 1
+select hand, count ( * ) from players group by hand
+select hand, count ( * ) from players group by hand
